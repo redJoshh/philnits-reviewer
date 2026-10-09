@@ -1,0 +1,4 @@
+# Regenerates <year>/index.html from examQA-md/*.md on every deploy (Node only, no npm install).
+[build]
+  command = "node tools/build-data.js"
+  publish = "."

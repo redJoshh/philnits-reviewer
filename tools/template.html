@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__PAGE_TITLE__ · PhilNITS Reviewer</title>
+<meta name="description" content="Interactive reviewer for the __PAGE_TITLE__ questions: quiz mode, document view, search and progress tracking.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  // Apply saved theme before first paint to avoid a flash.
+  try { var t = localStorage.getItem("philnits:theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #dde1e7;
+  --text: #1b1f24;
+  --muted: #5d6673;
+  --accent: #2f5bd3;
+  --accent-soft: #e7edfc;
+  --ok: #1f7a3d;
+  --ok-bg: #e5f5ea;
+  --ok-border: #86c99c;
+  --bad: #b42323;
+  --bad-bg: #fbe9e9;
+  --bad-border: #e7a1a1;
+  --warn: #8a5a00;
+  --warn-bg: #fff4dc;
+  --star: #d99a00;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .04);
+  --radius: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --surface: #171b21; --surface-2: #1f242c; --border: #2c333d;
+    --text: #e6e9ee; --muted: #9aa4b2; --accent: #7b9cff; --accent-soft: #1e2a4a;
+    --ok: #6fd18f; --ok-bg: #13301e; --ok-border: #2f7046;
+    --bad: #ff8b8b; --bad-bg: #3a1717; --bad-border: #8a3434;
+    --warn: #f0c060; --warn-bg: #33280f; --star: #f2c14e;
+    --shadow: none; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --surface: #171b21; --surface-2: #1f242c; --border: #2c333d;
+  --text: #e6e9ee; --muted: #9aa4b2; --accent: #7b9cff; --accent-soft: #1e2a4a;
+  --ok: #6fd18f; --ok-bg: #13301e; --ok-border: #2f7046;
+  --bad: #ff8b8b; --bad-bg: #3a1717; --bad-border: #8a3434;
+  --warn: #f0c060; --warn-bg: #33280f; --star: #f2c14e;
+  --shadow: none; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 var(--font);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+.topbar .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; }
+.brand { font-weight: 650; font-size: 1.02rem; margin-right: auto; }
+.brand small { display: block; font-weight: 450; color: var(--muted); font-size: .78rem; }
+.stats { display: flex; gap: 16px; font-size: .85rem; color: var(--muted); }
+.stats b { color: var(--text); font-variant-numeric: tabular-nums; font-size: .98rem; }
+.progress { height: 3px; background: var(--surface-2); }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+
+.btn {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+  padding: 6px 12px; font-size: .88rem; line-height: 1.3; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.btn.danger:hover { color: var(--bad); border-color: var(--bad-border); }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; font-size: .88rem; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 0 6px; }
+.filters input[type="search"] { flex: 1 1 240px; min-width: 0; }
+.filters input, .filters select {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 10px; font-size: .92rem;
+}
+.meta-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem; padding: 4px 0 12px; flex-wrap: wrap; }
+
+/* Question cards */
+main { padding-bottom: 64px; }
+.q {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 14px;
+}
+.q-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.q-num { font-weight: 650; }
+.tag { font-size: .74rem; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.bm { margin-left: auto; border: 0; background: none; font-size: 1.25rem; line-height: 1; color: var(--muted); padding: 2px 4px; }
+.bm[aria-pressed="true"] { color: var(--star); }
+.prompt p { margin: 0 0 .6em; }
+.prompt ul, .prompt ol { margin: .2em 0 .7em; padding-left: 1.4em; }
+.prompt table { border-collapse: collapse; margin: .4em 0 .8em; font-size: .9rem; display: block; overflow-x: auto; max-width: 100%; }
+.prompt th, .prompt td { border: 1px solid var(--border); padding: 4px 10px; text-align: left; }
+.prompt th { background: var(--surface-2); }
+.note-fig { font-size: .82rem; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; margin: 4px 0 10px; }
+
+.opts { display: grid; gap: 8px; margin-top: 8px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
+}
+.opt:not(:disabled):hover { border-color: var(--accent); background: var(--accent-soft); }
+.opt:disabled { cursor: default; }
+.opt .k {
+  flex: none; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface-2); font-size: .82rem; font-weight: 600;
+}
+.opt .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.opt .m { flex: none; }
+.opt.correct { background: var(--ok-bg); border-color: var(--ok-border); }
+.opt.correct .k { background: var(--ok); color: var(--surface); }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad-border); }
+.opt.wrong .k { background: var(--bad); color: var(--surface); }
+.opt.dim { opacity: .62; }
+
+.q-foot { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.linkbtn { border: 0; background: none; color: var(--accent); padding: 2px 0; font-size: .88rem; }
+.linkbtn + .linkbtn { margin-left: 12px; }
+.explain {
+  margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--ok-border);
+  background: var(--surface-2); border-radius: 0 8px 8px 0; font-size: .94rem;
+}
+
+/* Document view */
+.doc .q { box-shadow: none; padding: 16px 20px; }
+.doc .doc-opts { list-style: none; padding: 0; margin: 6px 0 8px; }
+.doc .doc-opts li { padding: 2px 0; }
+.doc .doc-opts li.correct { font-weight: 600; color: var(--ok); }
+.doc .doc-ans { font-size: .94rem; }
+
+.empty { text-align: center; color: var(--muted); padding: 48px 0; }
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: .88rem;
+  transition: .2s; pointer-events: none; z-index: 20;
+}
+.toast.show { opacity: 1; transform: translateX(-50%); }
+footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
+.katex { font-size: 1.05em; }
+
+@media (max-width: 640px) {
+  .stats { gap: 12px; width: 100%; order: 3; }
+  .q { padding: 14px 14px; }
+  .brand { flex-basis: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="row">
+      <div class="brand">__PAGE_TITLE__<small>PhilNITS IT Passport Reviewer</small></div>
+      <div class="stats" aria-live="polite">
+        <span>Answered <b id="st-answered">0</b></span>
+        <span>Score <b id="st-score">–</b></span>
+        <span>Remaining <b id="st-remaining">0</b></span>
+      </div>
+    </div>
+    <div class="row" style="padding-top:0">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="quiz" aria-pressed="true">Quiz</button>
+        <button type="button" data-view="doc" aria-pressed="false">Document</button>
+      </div>
+      <div class="actions" style="margin-left:auto">
+        <button type="button" class="btn" id="btn-shuffle" aria-pressed="false">Shuffle</button>
+        <button type="button" class="btn danger" id="btn-reset">Reset</button>
+        <button type="button" class="btn" id="btn-theme" aria-label="Toggle dark mode">Theme</button>
+      </div>
+    </div>
+  </div>
+  <div class="progress"><span id="progress-bar"></span></div>
+</header>
+
+<main class="wrap">
+  <div class="filters">
+    <input type="search" id="f-search" placeholder="Search questions, options, or a number (e.g. 42)" aria-label="Search">
+    <select id="f-session" aria-label="Session filter"><option value="">All sessions</option></select>
+    <select id="f-status" aria-label="Status filter">
+      <option value="all">All questions</option>
+      <option value="unanswered">Unanswered</option>
+      <option value="incorrect">Incorrect</option>
+      <option value="bookmarked">Bookmarked</option>
+    </select>
+  </div>
+  <div class="meta-line">
+    <span id="count-line"></span>
+    <button type="button" class="btn" id="btn-copy" hidden>Copy as text</button>
+  </div>
+  <div id="list"></div>
+</main>
+<footer class="wrap" id="foot"></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const EXAM = /*__EXAM_DATA__*/null;
+
+(function () {
+  "use strict";
+  const QS = EXAM.questions;
+  const BY_ID = new Map(QS.map((q) => [q.id, q]));
+  const STORE_KEY = "philnits:" + EXAM.year + ":v1";
+  const $ = (s) => document.querySelector(s);
+
+  // ---------- persistence ----------
+  const defaults = () => ({ answers: {}, revealed: {}, bookmarks: {}, view: "quiz", order: null, filters: { q: "", session: "", status: "all" } });
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE_KEY));
+      if (s && typeof s === "object") return Object.assign(defaults(), s);
+    } catch (e) {}
+    return defaults();
+  }
+  let state = load();
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---------- markdown + math rendering ----------
+  const ESC_CHARS = "\\`*_{}[]()#+-.!<>$|~\"'=&";
+  const htmlEsc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // Source uses "\$\\checkmark\$" for escaped math; normalise to "$\checkmark$".
+  const normalise = (s) => s.replace(/\\\$\\\\([a-zA-Z]+)\\\$/g, (_, c) => "$\\" + c + "$");
+
+  // "$...$" is math only when not glued to letters/digits (keeps spreadsheet refs like $A$36 or B$3 literal).
+  const RE_MATH = /(^|[^\\A-Za-z0-9$])\$([^$\n]+?)\$(?![A-Za-z0-9$])/g;
+
+  function extractMath(s, store) {
+    return s.replace(RE_MATH, (m, pre, tex) => {
+      if (/^\s|\s$/.test(tex)) return m;
+      store.push(tex);
+      return pre + "\uE000" + (store.length - 1) + "\uE000";
+    });
+  }
+
+  function renderTex(tex) {
+    if (window.katex) {
+      try { return katex.renderToString(tex, { throwOnError: false }); } catch (e) {}
+    }
+    return htmlEsc(texToPlain(tex));
+  }
+
+  function texToPlain(tex) {
+    const map = { times: "×", rightarrow: "→", leftarrow: "←", Rightarrow: "⇒", leftrightarrow: "↔", checkmark: "✓", div: "÷", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", cdot: "·", pm: "±", infty: "∞", approx: "≈", sqrt: "√" };
+    return tex
+      .replace(/\\([a-zA-Z]+)\s?/g, (m, c) => (c in map ? map[c] : m))
+      .replace(/\^\{([^}]*)\}/g, "^$1").replace(/_\{([^}]*)\}/g, "_$1")
+      .replace(/[{}]/g, "").replace(/\\ /g, " ");
+  }
+
+  function inline(src) {
+    const math = [], escs = [];
+    let s = extractMath(normalise(src), math);
+    s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? (escs.push(c), "\uE001" + (escs.length - 1) + "\uE001") : m));
+    s = htmlEsc(s);
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
+    s = s.replace(/\uE001(\d+)\uE001/g, (_, i) => htmlEsc(escs[+i]));
+    return s.replace(/\uE000(\d+)\uE000/g, (_, i) => renderTex(math[+i]));
+  }
+
+  function plain(src) {
+    const math = [];
+    let s = extractMath(normalise(src), math);
+    s = s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^*\\])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1$2");
+    s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? c : m));
+    return s.replace(/\uE000(\d+)\uE000/g, (_, i) => texToPlain(math[+i]));
+  }
+
+  const RE_BULLET = /^\s*[*-]\s+/, RE_NUM = /^\s*\d+\.\s+/, RE_TABLE = /^\s*\|/;
+  function block(src) {
+    const lines = src.split("\n"), out = [];
+    let i = 0;
+    while (i < lines.length) {
+      const l = lines[i];
+      if (!l.trim()) { i++; continue; }
+      if (RE_TABLE.test(l)) {
+        const rows = [];
+        while (i < lines.length && RE_TABLE.test(lines[i])) rows.push(lines[i++]);
+        out.push(table(rows));
+      } else if (RE_BULLET.test(l) || RE_NUM.test(l)) {
+        const ordered = RE_NUM.test(l), re = ordered ? RE_NUM : RE_BULLET, items = [];
+        while (i < lines.length && re.test(lines[i])) items.push(lines[i++].replace(re, ""));
+        const tag = ordered ? "ol" : "ul";
+        out.push("<" + tag + ">" + items.map((t) => "<li>" + inline(t) + "</li>").join("") + "</" + tag + ">");
+      } else {
+        const para = [];
+        while (i < lines.length && lines[i].trim() && !RE_TABLE.test(lines[i]) && !RE_BULLET.test(lines[i]) && !RE_NUM.test(lines[i])) para.push(lines[i++]);
+        out.push("<p>" + para.map((t) => inline(t.trim())).join("<br>") + "</p>");
+      }
+    }
+    return out.join("");
+  }
+
+  function table(rows) {
+    const cells = (r) => r.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+    const body = rows.filter((r) => !/^\s*\|?\s*:?-{2,}/.test(r)).map(cells);
+    if (!body.length) return "";
+    const [head, ...rest] = body;
+    return "<table><thead><tr>" + head.map((c) => "<th>" + inline(c) + "</th>").join("") + "</tr></thead><tbody>" +
+      rest.map((r) => "<tr>" + r.map((c) => "<td>" + inline(c) + "</td>").join("") + "</tr>").join("") + "</tbody></table>";
+  }
+
+  const cache = new Map();
+  function rendered(q) {
+    let r = cache.get(q.id);
+    if (!r) {
+      r = {
+        prompt: block(q.prompt),
+        options: q.options.map((o) => inline(o.text)),
+        explanation: inline(q.explanation || ""),
+        search: ("#" + q.questionNumber + " " + q.id + " " + plain(q.prompt) + " " + q.options.map((o) => plain(o.text)).join(" ")).toLowerCase(),
+      };
+      cache.set(q.id, r);
+    }
+    return r;
+  }
+
+  // ---------- filtering ----------
+  function ordered() {
+    if (!state.order) return QS;
+    const list = state.order.map((id) => BY_ID.get(id)).filter(Boolean);
+    return list.length === QS.length ? list : QS;
+  }
+
+  function visible() {
+    const f = state.filters, term = f.q.trim().toLowerCase();
+    const num = /^#?(\d+)$/.exec(term);
+    return ordered().filter((q) => {
+      if (f.session && q.session !== f.session) return false;
+      const a = state.answers[q.id];
+      if (f.status === "unanswered" && a) return false;
+      if (f.status === "incorrect" && (!a || a === q.correctAnswer)) return false;
+      if (f.status === "bookmarked" && !state.bookmarks[q.id]) return false;
+      if (!term) return true;
+      if (num) return q.questionNumber === +num[1];
+      return rendered(q).search.includes(term);
+    });
+  }
+
+  // ---------- views ----------
+  function quizCard(q) {
+    const r = rendered(q), a = state.answers[q.id], revealed = !a && state.revealed[q.id];
+    const done = !!a || revealed;
+    const status = a ? (a === q.correctAnswer ? '<span class="tag ok">Correct</span>' : '<span class="tag bad">Incorrect</span>') : "";
+    const opts = q.options.map((o, i) => {
+      let cls = "", mark = "";
+      if (done && o.key === q.correctAnswer) { cls = "correct"; mark = "✅"; }
+      else if (a && o.key === a) { cls = "wrong"; mark = "❌"; }
+      else if (done) cls = "dim";
+      return '<button type="button" class="opt ' + cls + '" data-act="pick" data-key="' + o.key + '"' + (done ? " disabled" : "") + ">" +
+        '<span class="k">' + o.key + '</span><span class="t">' + r.options[i] + '</span><span class="m">' + mark + "</span></button>";
+    }).join("");
+    const foot = done
+      ? '<button type="button" class="linkbtn" data-act="clear">' + (a ? "Try again" : "Hide answer") + "</button>"
+      : '<button type="button" class="linkbtn" data-act="reveal">Reveal answer</button>';
+    return '<article class="q" data-id="' + q.id + '">' + head(q, status) +
+      '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
+      '<div class="opts">' + opts + "</div>" +
+      '<div class="q-foot">' + foot + "</div>" +
+      (done && r.explanation ? '<div class="explain"><strong>Answer:</strong> ' + r.explanation + "</div>" : "") +
+      "</article>";
+  }
+
+  function docCard(q) {
+    const r = rendered(q);
+    const opts = q.options.map((o, i) => {
+      const ok = o.key === q.correctAnswer;
+      return '<li class="' + (ok ? "correct" : "") + '">[' + (ok ? "x" : "&nbsp;") + "] " + o.key + ") " + r.options[i] + (ok ? " ✅" : "") + "</li>";
+    }).join("");
+    return '<article class="q" data-id="' + q.id + '">' + head(q, "") +
+      '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
+      '<ul class="doc-opts">' + opts + "</ul>" +
+      '<div class="doc-ans"><strong>Answer:</strong> ' + r.explanation + "</div></article>";
+  }
+
+  function head(q, status) {
+    const bm = !!state.bookmarks[q.id];
+    return '<div class="q-head"><span class="q-num">Question ' + q.questionNumber + '</span><span class="tag">' + htmlEsc(q.session || "") + "</span>" + status +
+      '<button type="button" class="bm" data-act="bookmark" aria-pressed="' + bm + '" aria-label="Bookmark question ' + q.questionNumber + '" title="Bookmark">' + (bm ? "★" : "☆") + "</button></div>";
+  }
+
+  const figNote = (q) => (q.hasDiagram ? '<div class="note-fig">This question refers to a figure, graph or table that is not included in the source.</div>' : "");
+
+  function render() {
+    const list = visible(), box = $("#list"), doc = state.view === "doc";
+    box.className = doc ? "doc" : "quiz";
+    box.innerHTML = list.length ? list.map(doc ? docCard : quizCard).join("") : '<p class="empty">No questions match these filters.</p>';
+    $("#count-line").textContent = "Showing " + list.length + " of " + QS.length + " questions" + (state.order ? " · shuffled" : "");
+    $("#btn-copy").hidden = !doc || !list.length;
+    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === state.view)));
+    $("#btn-shuffle").setAttribute("aria-pressed", String(!!state.order));
+    stats();
+  }
+
+  function rerenderCard(id) {
+    const el = document.querySelector('.q[data-id="' + id + '"]');
+    if (!el) return;
+    const q = BY_ID.get(id);
+    el.outerHTML = state.view === "doc" ? docCard(q) : quizCard(q);
+  }
+
+  function stats() {
+    let answered = 0, correct = 0;
+    for (const q of QS) {
+      const a = state.answers[q.id];
+      if (a) { answered++; if (a === q.correctAnswer) correct++; }
+    }
+    $("#st-answered").textContent = answered + "/" + QS.length;
+    $("#st-score").textContent = answered ? Math.round((correct / answered) * 100) + "%" : "–";
+    $("#st-remaining").textContent = QS.length - answered;
+    $("#progress-bar").style.width = (answered / QS.length) * 100 + "%";
+  }
+
+  // ---------- copy (document view) ----------
+  function copyText(list) {
+    return list.map((q) => {
+      const opts = q.options.map((o) => (o.key === q.correctAnswer ? "[x] " : "[ ] ") + o.key + ") " + plain(o.text) + (o.key === q.correctAnswer ? " ✅" : "")).join("\n");
+      return "Question " + q.questionNumber + " (" + q.session + ")\n" + plain(q.prompt) + "\n\n" + opts + "\n\nAnswer: " + plain(q.explanation || "");
+    }).join("\n\n");
+  }
+
+  async function copyVisible() {
+    const text = copyText(visible());
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("Copied " + visible().length + " questions");
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Copied"); } catch (e2) { toast("Copy failed"); }
+      ta.remove();
+    }
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // ---------- theme ----------
+  function currentTheme() {
+    return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+  function themeLabel() { $("#btn-theme").textContent = currentTheme() === "dark" ? "☀ Light" : "☾ Dark"; }
+
+  // ---------- events ----------
+  $("#list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const id = btn.closest(".q").dataset.id;
+    const act = btn.dataset.act;
+    if (act === "pick") { state.answers[id] = btn.dataset.key; delete state.revealed[id]; }
+    else if (act === "reveal") state.revealed[id] = true;
+    else if (act === "clear") { delete state.answers[id]; delete state.revealed[id]; }
+    else if (act === "bookmark") { if (state.bookmarks[id]) delete state.bookmarks[id]; else state.bookmarks[id] = true; }
+    save(); rerenderCard(id); stats();
+  });
+
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
+    state.view = b.dataset.view; save(); render();
+  }));
+
+  let searchTimer;
+  $("#f-search").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.filters.q = e.target.value; save(); render(); }, 120);
+  });
+  $("#f-session").addEventListener("change", (e) => { state.filters.session = e.target.value; save(); render(); });
+  $("#f-status").addEventListener("change", (e) => { state.filters.status = e.target.value; save(); render(); });
+
+  $("#btn-shuffle").addEventListener("click", () => {
+    if (state.order) state.order = null;
+    else {
+      const ids = QS.map((q) => q.id);
+      for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+      state.order = ids;
+    }
+    save(); render(); window.scrollTo({ top: 0 });
+  });
+
+  $("#btn-reset").addEventListener("click", () => {
+    if (!confirm("Clear all your answers and revealed answers for this exam? Bookmarks are kept.")) return;
+    state.answers = {}; state.revealed = {}; state.order = null;
+    save(); render(); toast("Progress cleared");
+  });
+
+  $("#btn-theme").addEventListener("click", () => {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("philnits:theme", next); } catch (e) {}
+    themeLabel();
+  });
+
+  $("#btn-copy").addEventListener("click", copyVisible);
+
+  // ---------- init ----------
+  function init() {
+    const sessions = [...new Set(QS.map((q) => q.session).filter(Boolean))];
+    $("#f-session").insertAdjacentHTML("beforeend", sessions.map((s) => '<option value="' + htmlEsc(s) + '">' + htmlEsc(s) + "</option>").join(""));
+    if (!sessions.includes(state.filters.session)) state.filters.session = "";
+    $("#f-search").value = state.filters.q;
+    $("#f-session").value = state.filters.session;
+    $("#f-status").value = state.filters.status;
+    $("#foot").textContent = QS.length + " questions · source: examQA-md · built " + EXAM.generatedAt.slice(0, 10);
+    themeLabel();
+    render();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>
