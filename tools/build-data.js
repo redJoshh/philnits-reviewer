@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Parses every examQA-md/*.md exam bank and writes a standalone study portal
-// per exam year: "<year>/index.html" (built from tools/template.html).
+// per exam year: "<year>/index.html" (built from tools/template.html), plus the
+// home page "index.html" linking to every year (built from tools/home-template.html).
 // Zero dependencies — runs locally (`node tools/build-data.js`) or as the Netlify build command.
 
 const fs = require("fs");
@@ -9,6 +10,7 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(ROOT, "examQA-md");
 const TEMPLATE = path.join(__dirname, "template.html");
+const HOME_TEMPLATE = path.join(__dirname, "home-template.html");
 
 // Two source layouts are supported:
 //   A) "### **Question N**" + "*(Source: … — Spring 2011)*" + "* [x] b) … ✅" + "**Answer:** b) …"
@@ -219,6 +221,22 @@ function main() {
     fs.writeFileSync(path.join(outDir, "index.html"), html);
     console.log(`wrote ${year}/index.html (${exam.questions.length} questions)`);
   }
+
+  // Home page at the site root: one card per year, newest first.
+  const years = [...byYear].sort(([a], [b]) => b.localeCompare(a)).map(([year, exam]) => {
+    const sessions = [];
+    for (const q of exam.questions) {
+      const name = q.session.split(" ")[0];
+      const s = sessions.find((x) => x.name === name);
+      if (s) s.count++;
+      else sessions.push({ name, count: 1 });
+    }
+    return { year, title: exam.title, total: exam.questions.length, sessions };
+  });
+  const site = JSON.stringify({ generatedAt: new Date().toISOString(), years }).replace(/</g, "\\u003c");
+  const home = fs.readFileSync(HOME_TEMPLATE, "utf8").replace("/*__SITE_DATA__*/null", () => site);
+  fs.writeFileSync(path.join(ROOT, "index.html"), home);
+  console.log(`wrote index.html (${years.length} years)`);
 }
 
 main();

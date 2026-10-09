@@ -75,6 +75,8 @@ button { cursor: pointer; }
 .topbar .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; }
 .brand { font-weight: 650; font-size: 1.02rem; margin-right: auto; }
 .brand small { display: block; font-weight: 450; color: var(--muted); font-size: .78rem; }
+.brand .home { display: block; font-weight: 500; font-size: .78rem; color: var(--accent); text-decoration: none; margin-bottom: 2px; }
+.brand .home:hover { text-decoration: underline; }
 .stats { display: flex; gap: 16px; font-size: .85rem; color: var(--muted); }
 .stats b { color: var(--text); font-variant-numeric: tabular-nums; font-size: .98rem; }
 .progress { height: 3px; background: var(--surface-2); }
@@ -177,7 +179,7 @@ code { font: .92em ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", mo
 <header class="topbar">
   <div class="wrap">
     <div class="row">
-      <div class="brand">__PAGE_TITLE__<small>PhilNITS IT Passport Reviewer</small></div>
+      <div class="brand"><a class="home" href="../index.html">← All years</a>__PAGE_TITLE__<small>PhilNITS IT Passport Reviewer</small></div>
       <div class="stats" aria-live="polite">
         <span>Answered <b id="st-answered">0</b></span>
         <span>Score <b id="st-score">–</b></span>
@@ -441,6 +443,8 @@ const EXAM = /*__EXAM_DATA__*/null;
     $("#st-score").textContent = answered ? Math.round((correct / answered) * 100) + "%" : "–";
     $("#st-remaining").textContent = QS.length - answered;
     $("#progress-bar").style.width = (answered / QS.length) * 100 + "%";
+    // Summary for the home page's year cards.
+    try { localStorage.setItem("philnits:" + EXAM.year + ":summary", JSON.stringify({ answered, correct, total: QS.length })); } catch (e) {}
   }
 
   // ---------- copy (document view) ----------
