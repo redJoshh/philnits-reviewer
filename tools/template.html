@@ -164,6 +164,7 @@ main { padding-bottom: 64px; }
 .toast.show { opacity: 1; transform: translateX(-50%); }
 footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
 .katex { font-size: 1.05em; }
+code { font: .92em ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; background: var(--surface-2); border-radius: 4px; padding: 1px 5px; }
 
 @media (max-width: 640px) {
   .stats { gap: 12px; width: 100%; order: 3; }
@@ -274,22 +275,27 @@ const EXAM = /*__EXAM_DATA__*/null;
   }
 
   function inline(src) {
-    const math = [], escs = [];
-    let s = extractMath(normalise(src), math);
+    const math = [], escs = [], code = [];
+    // `code` spans are shown verbatim (spreadsheet formulas etc.), so pull them out first.
+    let s = src.replace(/`([^`\n]+)`/g, (_, c) => (code.push(c), "" + (code.length - 1) + ""));
+    s = extractMath(normalise(s), math);
     s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? (escs.push(c), "\uE001" + (escs.length - 1) + "\uE001") : m));
     s = htmlEsc(s);
     s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     s = s.replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
     s = s.replace(/\uE001(\d+)\uE001/g, (_, i) => htmlEsc(escs[+i]));
-    return s.replace(/\uE000(\d+)\uE000/g, (_, i) => renderTex(math[+i]));
+    s = s.replace(/\uE000(\d+)\uE000/g, (_, i) => renderTex(math[+i]));
+    return s.replace(/\uE002(\d+)\uE002/g, (_, i) => "<code>" + htmlEsc(code[+i]) + "</code>");
   }
 
   function plain(src) {
-    const math = [];
-    let s = extractMath(normalise(src), math);
+    const math = [], code = [];
+    let s = src.replace(/`([^`\n]+)`/g, (_, c) => (code.push(c), "\uE002" + (code.length - 1) + "\uE002"));
+    s = extractMath(normalise(s), math);
     s = s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^*\\])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1$2");
     s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? c : m));
-    return s.replace(/\uE000(\d+)\uE000/g, (_, i) => texToPlain(math[+i]));
+    s = s.replace(/\uE000(\d+)\uE000/g, (_, i) => texToPlain(math[+i]));
+    return s.replace(/\uE002(\d+)\uE002/g, (_, i) => code[+i]);
   }
 
   const RE_BULLET = /^\s*[*-]\s+/, RE_NUM = /^\s*\d+\.\s+/, RE_TABLE = /^\s*\|/;

@@ -45,3 +45,29 @@
 - Tables from the PDFs were typed as markdown tables.
 - Figures were described in italic notes (e.g. control charts, flow diagrams, WBS tree, DFD, flowchart); no images yet.
 - Case-study groups (Spring A/B/C and Autumn A/B/C, Q89–Q100): the first question of each group carries the full scenario; the other three carry a condensed version of the scenario they need, so each question works on its own (including in shuffle mode).
+
+## 2026-10-09 — 2019 exam page (Spring + Autumn)
+
+### Created
+- **`2019/index.html`** — generated from `examQA-md/IT Passport Exam - 2019 Spring.md` and `IT Passport Exam - 2019 Autumn.md`. Both sessions share one page (Spring first, then Autumn), with the Session filter to switch.
+
+### Changed
+- **`tools/build-data.js`**
+  - Reads a second markdown layout used by the 2019 files: `### Q1. prompt…`, `- a) …` options, `**✅ Correct Answer: a**`. The session comes from the file name (`… 2019 Spring.md`) or the title month (April = Spring, October = Autumn).
+  - "Combination" questions whose options are table rows (`| a) | MP3 | JPEG | GIF |`) become normal options labelled with the column headers, e.g. "Still images: GIF · Moving images: MPEG · Audio: MP3".
+  - Questions with fewer than 4 options or no answer are skipped with a warning instead of being shown half-built.
+  - One page per year: files named `… YYYY Spring.md` / `… YYYY Autumn.md` are merged into `YYYY/index.html`, sorted Spring then Autumn by question number; duplicate IDs are reported.
+  - For files without explanations, the Answer box shows the correct option's text.
+- **`tools/template.html`** — `inline code` spans (e.g. spreadsheet formulas) render in a monospace style instead of showing backticks.
+- **`2011/index.html`** — regenerated with the new template; content unchanged (all 200 answers still match the official keys).
+
+### Source data notes (2019)
+- Both 2019 files are titled "Questions 1–50" but are truncated: Spring ends inside Q28, Autumn ends inside Q38. Q28 (Spring) and Q38 (Autumn) are skipped until the files are completed.
+- 2019 questions that reference figures (e.g. Spring Q5, Q14 "[Diagram A–D]") show the "figure not included" note; figures are deferred for now.
+
+## 2026-10-09 — 2019 rebuilt from the completed source files
+
+- **`examQA-md/IT Passport Exam - 2019 Spring.md` / `… 2019 Autumn.md`** were completed (50 questions each).
+- **`tools/build-data.js`** — the `**✅ Correct Answer: x**` line may now be indented (the updated files indent it).
+- **`2019/index.html`** — regenerated: 100 questions (Spring Q1–50, Autumn Q1–50), none skipped.
+- Duplicate check: no repeated question numbers and no duplicate or near-duplicate questions within 2019. Six 2019 questions are reused from the 2011 papers (2019A-Q02 = 2011A-Q07, 2019A-Q20 = 2011A-Q17, 2019S-Q11 = 2011A-Q11, 2019S-Q19 = 2011A-Q16, 2019A-Q03 = 2011A-Q08, 2019S-Q05 = 2011A-Q05); these are genuine re-used exam questions and were kept.
