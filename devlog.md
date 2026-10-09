@@ -82,3 +82,14 @@
 - **`tools/build-data.js`** — also writes the root `index.html` from `home-template.html`. New years appear on the home page automatically once their markdown is added to `examQA-md/`.
 - **`tools/template.html`** — "← All years" link back to the home page; each year page saves a small progress summary (`philnits:<year>:summary`) for the home page cards.
 - Links point to `…/index.html` explicitly so navigation also works when the files are opened locally by double-click, not only on Netlify.
+
+## 2026-10-09 — 2026 exam page
+
+### Created
+- **`2026/index.html`** — generated from `examQA-md/IT Passport Exam - 2026.md` (title "April 2026", so the session is Spring 2026). 97 of 100 questions.
+- **`index.html`** (root) — regenerated; now lists 2026, 2019 and 2011.
+
+### Source data notes (2026)
+- Q5, Q28 and Q94 are skipped: their answer choices are figures and the source has no option lines ("Diagrams omitted in source text"). They can be added once the figures/options are filled in.
+- No duplicate questions within 2026. Five questions are reused from 2019 (2026S-Q43 = 2019A-Q42, 2026S-Q19 = 2019S-Q22, 2026S-Q41 = 2019S-Q43, 2026S-Q15 = 2019A-Q15, 2026S-Q06 = 2019S-Q05); kept, as with the 2011/2019 overlaps.
+- No code changes were needed: the 2026 file uses the same layout as the 2019 files.
