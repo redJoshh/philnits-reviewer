@@ -10,6 +10,8 @@ The graph below consists of two sets of bar graphs; one in black and the other i
 
 **Answer:** b) The gray bar graph has a smaller variance than the black bar graph.
 
+**💡 Figure hint:** In the graph, the gray bars are bunched closely around the middle scores, while the black bars are spread out across the 0–10 range. Data clustered near its average has a smaller variance, so the gray graph has the smaller variance (b).
+
 ### **Question 2**
 
 *(Source: IT Passport Examination — Spring 2011\)*  
@@ -496,6 +498,8 @@ A system, consisting of four subsystems a through d, is being developed. The cha
 
 **Answer:** a) a
 
+**💡 Figure hint:** In the chart, the cumulative bug count for subsystem a rises and then levels off (almost no new bugs found late in testing), while the curves for b–d are still climbing. A curve that has flattened out shows the bugs have converged, so subsystem a is at the highest quality level (a).
+
 ### **Question 41**
 
 *(Source: IT Passport Examination — Spring 2011\)*  
@@ -567,6 +571,8 @@ In the arrow diagram below, what is the maximum number of days that can be accep
 
 **Answer:** d) 4
 
+**💡 Figure hint:** Activity C→F is not on the critical (longest) path. The path that runs through C→F is 4 days shorter than the critical path from A to G, so C→F has 4 days of slack (total float): it can slip up to 4 days without delaying the whole project (d).
+
 ### **Question 47**
 
 *(Source: IT Passport Examination — Spring 2011\)*  
@@ -590,6 +596,8 @@ In system development, which of the following is the most appropriate graph that
 * \[ \] d) Graph d
 
 **Answer:** a) Graph a
+
+**💡 Figure hint:** Graph a is the one where the cost to fix a defect rises sharply (exponentially) the later it is found: small in design, larger in development and test, and largest in operations. The later a defect is found, the more finished work has to be redone (a).
 
 ### **Question 49**
 
@@ -1533,6 +1541,8 @@ A sound signal is digitized. Sampling is performed at Time 1 through Time 5, and
 
 **Answer:** b) Figure b
 
+**💡 Figure hint:** Decode the target code the same way as the example (00 = lowest of the four levels, 11 = highest): 01 00 10 11 01 → levels 1, 0, 2, 3, 1. Figure b is the waveform that sits near level 1 at Time 1, dips to the lowest level at Time 2, rises to level 2 at Time 3, peaks at the top level at Time 4, and falls back to level 1 at Time 5.
+
 ### **Question 9**
 
 *(Source: IT Passport Examination — Autumn 2011\)*
@@ -2194,6 +2204,8 @@ Five weeks have passed since the start of a project whose schedule is shown by t
 * 
 
 **Answer:** d) G
+
+**💡 Figure hint:** The arrow diagram is not in the source. Work out what is left of each unfinished activity: B needs 1 more week, E 3 more, F all 4 weeks, and G 6 more (only 25% of 8 weeks done). In the diagram, B, E and F still have enough float to finish in time, but G's remaining 6 weeks cannot be absorbed, so G delays the completion of the project (d).
 
 ### **Question 46**
 

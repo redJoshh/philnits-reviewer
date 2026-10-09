@@ -121,7 +121,16 @@ main { padding-bottom: 64px; }
 .prompt table { border-collapse: collapse; margin: .4em 0 .8em; font-size: .9rem; display: block; overflow-x: auto; max-width: 100%; }
 .prompt th, .prompt td { border: 1px solid var(--border); padding: 4px 10px; text-align: left; }
 .prompt th { background: var(--surface-2); }
+.prompt pre.code {
+  margin: .4em 0 .8em; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; overflow-x: auto; font: .86rem/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+.prompt pre.code code { background: none; padding: 0; font: inherit; }
 .note-fig { font-size: .82rem; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; margin: 4px 0 10px; }
+.hint {
+  margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--warn);
+  background: var(--warn-bg); border-radius: 0 8px 8px 0; font-size: .92rem;
+}
 
 .opts { display: grid; gap: 8px; margin-top: 8px; }
 .opt {
@@ -232,7 +241,7 @@ const EXAM = /*__EXAM_DATA__*/null;
   const $ = (s) => document.querySelector(s);
 
   // ---------- persistence ----------
-  const defaults = () => ({ answers: {}, revealed: {}, bookmarks: {}, view: "quiz", order: null, filters: { q: "", session: "", status: "all" } });
+  const defaults = () => ({ answers: {}, revealed: {}, hints: {}, bookmarks: {}, view: "quiz", order: null, filters: { q: "", session: "", status: "all" } });
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(STORE_KEY));
@@ -300,14 +309,20 @@ const EXAM = /*__EXAM_DATA__*/null;
     return s.replace(/\uE002(\d+)\uE002/g, (_, i) => code[+i]);
   }
 
-  const RE_BULLET = /^\s*[*-]\s+/, RE_NUM = /^\s*\d+\.\s+/, RE_TABLE = /^\s*\|/;
+  const RE_BULLET = /^\s*[*-]\s+/, RE_NUM = /^\s*\d+\.\s+/, RE_TABLE = /^\s*\|/, RE_FENCE = /^\s*```/;
   function block(src) {
     const lines = src.split("\n"), out = [];
     let i = 0;
     while (i < lines.length) {
       const l = lines[i];
       if (!l.trim()) { i++; continue; }
-      if (RE_TABLE.test(l)) {
+      if (RE_FENCE.test(l)) {
+        const code = [];
+        i++;
+        while (i < lines.length && !RE_FENCE.test(lines[i])) code.push(lines[i++]);
+        i++;
+        out.push('<pre class="code"><code>' + htmlEsc(code.join("\n")) + "</code></pre>");
+      } else if (RE_TABLE.test(l)) {
         const rows = [];
         while (i < lines.length && RE_TABLE.test(lines[i])) rows.push(lines[i++]);
         out.push(table(rows));
@@ -318,7 +333,7 @@ const EXAM = /*__EXAM_DATA__*/null;
         out.push("<" + tag + ">" + items.map((t) => "<li>" + inline(t) + "</li>").join("") + "</" + tag + ">");
       } else {
         const para = [];
-        while (i < lines.length && lines[i].trim() && !RE_TABLE.test(lines[i]) && !RE_BULLET.test(lines[i]) && !RE_NUM.test(lines[i])) para.push(lines[i++]);
+        while (i < lines.length && lines[i].trim() && !RE_FENCE.test(lines[i]) && !RE_TABLE.test(lines[i]) && !RE_BULLET.test(lines[i]) && !RE_NUM.test(lines[i])) para.push(lines[i++]);
         out.push("<p>" + para.map((t) => inline(t.trim())).join("<br>") + "</p>");
       }
     }
@@ -342,7 +357,8 @@ const EXAM = /*__EXAM_DATA__*/null;
         prompt: block(q.prompt),
         options: q.options.map((o) => inline(o.text)),
         explanation: inline(q.explanation || ""),
-        search: ("#" + q.questionNumber + " " + q.id + " " + plain(q.prompt) + " " + q.options.map((o) => plain(o.text)).join(" ")).toLowerCase(),
+        hint: q.figureHint ? inline(q.figureHint) : "",
+        search: ("#" + q.questionNumber + " " + q.id + " " + plain(q.prompt) + " " + q.options.map((o) => plain(o.text)).join(" ") + " " + plain(q.figureHint || "")).toLowerCase(),
       };
       cache.set(q.id, r);
     }
@@ -384,12 +400,14 @@ const EXAM = /*__EXAM_DATA__*/null;
       return '<button type="button" class="opt ' + cls + '" data-act="pick" data-key="' + o.key + '"' + (done ? " disabled" : "") + ">" +
         '<span class="k">' + o.key + '</span><span class="t">' + r.options[i] + '</span><span class="m">' + mark + "</span></button>";
     }).join("");
-    const foot = done
+    const hintOpen = done || !!state.hints[q.id];
+    const foot = (done
       ? '<button type="button" class="linkbtn" data-act="clear">' + (a ? "Try again" : "Hide answer") + "</button>"
-      : '<button type="button" class="linkbtn" data-act="reveal">Reveal answer</button>';
+      : '<button type="button" class="linkbtn" data-act="reveal">Reveal answer</button>') +
+      (q.figureHint && !hintOpen ? '<button type="button" class="linkbtn" data-act="hint">Show figure hint</button>' : "");
     return '<article class="q" data-id="' + q.id + '">' + head(q, status) +
       '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
-      '<div class="opts">' + opts + "</div>" +
+      '<div class="opts">' + opts + "</div>" + (hintOpen ? figHint(q) : "") +
       '<div class="q-foot">' + foot + "</div>" +
       (done && r.explanation ? '<div class="explain"><strong>Answer:</strong> ' + r.explanation + "</div>" : "") +
       "</article>";
@@ -403,7 +421,7 @@ const EXAM = /*__EXAM_DATA__*/null;
     }).join("");
     return '<article class="q" data-id="' + q.id + '">' + head(q, "") +
       '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
-      '<ul class="doc-opts">' + opts + "</ul>" +
+      '<ul class="doc-opts">' + opts + "</ul>" + figHint(q) +
       '<div class="doc-ans"><strong>Answer:</strong> ' + r.explanation + "</div></article>";
   }
 
@@ -413,7 +431,12 @@ const EXAM = /*__EXAM_DATA__*/null;
       '<button type="button" class="bm" data-act="bookmark" aria-pressed="' + bm + '" aria-label="Bookmark question ' + q.questionNumber + '" title="Bookmark">' + (bm ? "★" : "☆") + "</button></div>";
   }
 
-  const figNote = (q) => (q.hasDiagram ? '<div class="note-fig">This question refers to a figure, graph or table that is not included in the source.</div>' : "");
+  // Figures the source could not include: a short note under the prompt, and a written hint
+  // (what the figure shows and which choice is right) below the choices.
+  const figNote = (q) => (q.figureMissing
+    ? '<div class="note-fig">📷 The figure for this question is not included in the source' + (q.figureHint ? "; a written hint is available below the choices." : ".") + "</div>"
+    : "");
+  const figHint = (q) => (q.figureHint ? '<div class="hint"><strong>💡 Figure hint:</strong> ' + rendered(q).hint + "</div>" : "");
 
   function render() {
     const list = visible(), box = $("#list"), doc = state.view === "doc";
@@ -451,7 +474,8 @@ const EXAM = /*__EXAM_DATA__*/null;
   function copyText(list) {
     return list.map((q) => {
       const opts = q.options.map((o) => (o.key === q.correctAnswer ? "[x] " : "[ ] ") + o.key + ") " + plain(o.text) + (o.key === q.correctAnswer ? " ✅" : "")).join("\n");
-      return "Question " + q.questionNumber + " (" + q.session + ")\n" + plain(q.prompt) + "\n\n" + opts + "\n\nAnswer: " + plain(q.explanation || "");
+      const hint = q.figureHint ? "\n\nFigure hint: " + plain(q.figureHint) : "";
+      return "Question " + q.questionNumber + " (" + q.session + ")\n" + plain(q.prompt) + "\n\n" + opts + hint + "\n\nAnswer: " + plain(q.explanation || "");
     }).join("\n\n");
   }
 
@@ -489,7 +513,8 @@ const EXAM = /*__EXAM_DATA__*/null;
     const act = btn.dataset.act;
     if (act === "pick") { state.answers[id] = btn.dataset.key; delete state.revealed[id]; }
     else if (act === "reveal") state.revealed[id] = true;
-    else if (act === "clear") { delete state.answers[id]; delete state.revealed[id]; }
+    else if (act === "hint") state.hints[id] = true;
+    else if (act === "clear") { delete state.answers[id]; delete state.revealed[id]; delete state.hints[id]; }
     else if (act === "bookmark") { if (state.bookmarks[id]) delete state.bookmarks[id]; else state.bookmarks[id] = true; }
     save(); rerenderCard(id); stats();
   });
@@ -518,7 +543,7 @@ const EXAM = /*__EXAM_DATA__*/null;
 
   $("#btn-reset").addEventListener("click", () => {
     if (!confirm("Clear all your answers and revealed answers for this exam? Bookmarks are kept.")) return;
-    state.answers = {}; state.revealed = {}; state.order = null;
+    state.answers = {}; state.revealed = {}; state.hints = {}; state.order = null;
     save(); render(); toast("Progress cleared");
   });
 

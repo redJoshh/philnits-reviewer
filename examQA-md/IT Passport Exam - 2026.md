@@ -6,7 +6,8 @@
 - b) $100
 - c) $150
 - d) $300  
-  **✅ Correct Answer: b**
+  **✅ Correct Answer: b**  
+  **💡 Figure hint:** The decision table is not in the source. It has two conditions, "Improvement of less than \$10,000" and "Turnaround time reduction of less than one week", with four rules (Y/Y, Y/N, N/Y, N/N). Here \$20,000 is not less than \$10,000 (N) and three days is less than one week (Y), so the N/Y rule applies, and it gives a \$100 reward (b). The same table appears in 2011 Autumn Q6.
 
 ---
 
@@ -50,7 +51,8 @@
 ### Q5. There is a series of numbered boxes stacked as shown in the figure. The operations described in the table are performed in the sequence of operations 1 through 4. When operation 4 is completed, which of the following shows the status of the stacked boxes?
 
 _(Note: Initial stack and diagrams omitted in source text)_  
-**✅ Correct Answer: b**
+**✅ Correct Answer: b**  
+  **💡 Figure hint:** The starting stack and the table of operations are not in the source, so this one cannot be worked out from the text alone. The answer is Figure B: the stack as it stands after operations 1 to 4 are done in order, remembering that boxes can only be put on or taken off the top (last in, first out).
 
 ---
 
@@ -72,7 +74,8 @@ _[Procedure]_ The number of the current state is multiplied by 11, and the resul
 - b) 2
 - c) 3
 - d) 4  
-  **✅ Correct Answer: d**
+  **✅ Correct Answer: d**  
+  **💡 Figure hint:** The figure arranges the four states in a ring: 1 → 2 → 3 → 4 → 1 in the clockwise direction. First pass: 1 × 11 = 11, and 11 ÷ 3 leaves remainder 2, so move two states clockwise to 3. Second pass: 3 × 11 = 33, remainder 0, so move one state clockwise to 4 (d).
 
 ---
 
@@ -288,7 +291,8 @@ C: It is software the copyright of which has been waived.
 ### Q28. When conditions (i) through (iv) are all fulfilled, which of the following is the E-R diagram that indicates the relationship between publishing companies, authors, and books?
 
 _(Conditions: Pub company has contracts with multiple authors; Author has contract with only 1 pub company; Author writes multiple books; One book is written by one author. Diagrams omitted in source text)_
-**✅ Correct Answer: a**
+**✅ Correct Answer: a**  
+  **💡 Figure hint:** From the conditions: a publishing company has many authors, but each author has only one publishing company, so Publishing company 1 — many Author. An author writes many books, and each book has one author, so Author 1 — many Book. Figure A is the E-R diagram showing Publishing company →(1 : many)→ Author →(1 : many)→ Book.
 
 ---
 
@@ -984,7 +988,8 @@ _(Weights: Selling power=1, Price=4, Quality=3, Brand=2. Company A current score
 ### Q94. Which of the following is an appropriate example part of DFD (Data Flow Diagram)?
 
 _(Note: Diagrams omitted in source text)_  
-**✅ Correct Answer: b**
+**✅ Correct Answer: b**  
+  **💡 Figure hint:** In a DFD, every data flow must start or end at a process: data cannot flow directly between two external entities, between two data stores, or between an external entity and a data store. Figure B is the fragment that follows this rule (the data passes through a process).
 
 ---
 

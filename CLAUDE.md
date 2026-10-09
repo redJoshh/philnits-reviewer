@@ -28,6 +28,7 @@ Convert extracted markdown exam banks (IT Passport exams) into a high-performanc
   - Display explanations/notes under the question once an answer is chosen or via a "Reveal Answer" toggle.
 - **Document / Google Docs View:**
   - Formats all questions cleanly with pre-checked correct answers (`[x]` or `✅`) and answer callouts.
+  - For pictures/figures/graph related questions with no source provided, add a note/hint below the choices of what the answer is, so that the user is still guided no matter what
 
 ### 2. Search & Filtering
 

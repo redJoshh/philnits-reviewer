@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IT Passport Exam - 2024 · PhilNITS Reviewer</title>
+<meta name="description" content="Interactive reviewer for the IT Passport Exam - 2024 questions: quiz mode, document view, search and progress tracking.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  // Apply saved theme before first paint to avoid a flash.
+  try { var t = localStorage.getItem("philnits:theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #dde1e7;
+  --text: #1b1f24;
+  --muted: #5d6673;
+  --accent: #2f5bd3;
+  --accent-soft: #e7edfc;
+  --ok: #1f7a3d;
+  --ok-bg: #e5f5ea;
+  --ok-border: #86c99c;
+  --bad: #b42323;
+  --bad-bg: #fbe9e9;
+  --bad-border: #e7a1a1;
+  --warn: #8a5a00;
+  --warn-bg: #fff4dc;
+  --star: #d99a00;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .04);
+  --radius: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216; --surface: #171b21; --surface-2: #1f242c; --border: #2c333d;
+    --text: #e6e9ee; --muted: #9aa4b2; --accent: #7b9cff; --accent-soft: #1e2a4a;
+    --ok: #6fd18f; --ok-bg: #13301e; --ok-border: #2f7046;
+    --bad: #ff8b8b; --bad-bg: #3a1717; --bad-border: #8a3434;
+    --warn: #f0c060; --warn-bg: #33280f; --star: #f2c14e;
+    --shadow: none; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216; --surface: #171b21; --surface-2: #1f242c; --border: #2c333d;
+  --text: #e6e9ee; --muted: #9aa4b2; --accent: #7b9cff; --accent-soft: #1e2a4a;
+  --ok: #6fd18f; --ok-bg: #13301e; --ok-border: #2f7046;
+  --bad: #ff8b8b; --bad-bg: #3a1717; --bad-border: #8a3434;
+  --warn: #f0c060; --warn-bg: #33280f; --star: #f2c14e;
+  --shadow: none; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 var(--font);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+.topbar .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; }
+.brand { font-weight: 650; font-size: 1.02rem; margin-right: auto; }
+.brand small { display: block; font-weight: 450; color: var(--muted); font-size: .78rem; }
+.brand .home { display: block; font-weight: 500; font-size: .78rem; color: var(--accent); text-decoration: none; margin-bottom: 2px; }
+.brand .home:hover { text-decoration: underline; }
+.stats { display: flex; gap: 16px; font-size: .85rem; color: var(--muted); }
+.stats b { color: var(--text); font-variant-numeric: tabular-nums; font-size: .98rem; }
+.progress { height: 3px; background: var(--surface-2); }
+.progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+
+.btn {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+  padding: 6px 12px; font-size: .88rem; line-height: 1.3; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.btn.danger:hover { color: var(--bad); border-color: var(--bad-border); }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; font-size: .88rem; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 0 6px; }
+.filters input[type="search"] { flex: 1 1 240px; min-width: 0; }
+.filters input, .filters select {
+  border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 10px; font-size: .92rem;
+}
+.meta-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem; padding: 4px 0 12px; flex-wrap: wrap; }
+
+/* Question cards */
+main { padding-bottom: 64px; }
+.q {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 14px;
+}
+.q-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.q-num { font-weight: 650; }
+.tag { font-size: .74rem; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.bm { margin-left: auto; border: 0; background: none; font-size: 1.25rem; line-height: 1; color: var(--muted); padding: 2px 4px; }
+.bm[aria-pressed="true"] { color: var(--star); }
+.prompt p { margin: 0 0 .6em; }
+.prompt ul, .prompt ol { margin: .2em 0 .7em; padding-left: 1.4em; }
+.prompt table { border-collapse: collapse; margin: .4em 0 .8em; font-size: .9rem; display: block; overflow-x: auto; max-width: 100%; }
+.prompt th, .prompt td { border: 1px solid var(--border); padding: 4px 10px; text-align: left; }
+.prompt th { background: var(--surface-2); }
+.prompt pre.code {
+  margin: .4em 0 .8em; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; overflow-x: auto; font: .86rem/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+.prompt pre.code code { background: none; padding: 0; font: inherit; }
+.note-fig { font-size: .82rem; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; margin: 4px 0 10px; }
+.hint {
+  margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--warn);
+  background: var(--warn-bg); border-radius: 0 8px 8px 0; font-size: .92rem;
+}
+
+.opts { display: grid; gap: 8px; margin-top: 8px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left; width: 100%;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
+}
+.opt:not(:disabled):hover { border-color: var(--accent); background: var(--accent-soft); }
+.opt:disabled { cursor: default; }
+.opt .k {
+  flex: none; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface-2); font-size: .82rem; font-weight: 600;
+}
+.opt .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.opt .m { flex: none; }
+.opt.correct { background: var(--ok-bg); border-color: var(--ok-border); }
+.opt.correct .k { background: var(--ok); color: var(--surface); }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad-border); }
+.opt.wrong .k { background: var(--bad); color: var(--surface); }
+.opt.dim { opacity: .62; }
+
+.q-foot { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.linkbtn { border: 0; background: none; color: var(--accent); padding: 2px 0; font-size: .88rem; }
+.linkbtn + .linkbtn { margin-left: 12px; }
+.explain {
+  margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--ok-border);
+  background: var(--surface-2); border-radius: 0 8px 8px 0; font-size: .94rem;
+}
+
+/* Document view */
+.doc .q { box-shadow: none; padding: 16px 20px; }
+.doc .doc-opts { list-style: none; padding: 0; margin: 6px 0 8px; }
+.doc .doc-opts li { padding: 2px 0; }
+.doc .doc-opts li.correct { font-weight: 600; color: var(--ok); }
+.doc .doc-ans { font-size: .94rem; }
+
+.empty { text-align: center; color: var(--muted); padding: 48px 0; }
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: .88rem;
+  transition: .2s; pointer-events: none; z-index: 20;
+}
+.toast.show { opacity: 1; transform: translateX(-50%); }
+footer { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 0 32px; }
+.katex { font-size: 1.05em; }
+code { font: .92em ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; background: var(--surface-2); border-radius: 4px; padding: 1px 5px; }
+
+@media (max-width: 640px) {
+  .stats { gap: 12px; width: 100%; order: 3; }
+  .q { padding: 14px 14px; }
+  .brand { flex-basis: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="row">
+      <div class="brand"><a class="home" href="../index.html">← All years</a>IT Passport Exam - 2024<small>PhilNITS IT Passport Reviewer</small></div>
+      <div class="stats" aria-live="polite">
+        <span>Answered <b id="st-answered">0</b></span>
+        <span>Score <b id="st-score">–</b></span>
+        <span>Remaining <b id="st-remaining">0</b></span>
+      </div>
+    </div>
+    <div class="row" style="padding-top:0">
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-view="quiz" aria-pressed="true">Quiz</button>
+        <button type="button" data-view="doc" aria-pressed="false">Document</button>
+      </div>
+      <div class="actions" style="margin-left:auto">
+        <button type="button" class="btn" id="btn-shuffle" aria-pressed="false">Shuffle</button>
+        <button type="button" class="btn danger" id="btn-reset">Reset</button>
+        <button type="button" class="btn" id="btn-theme" aria-label="Toggle dark mode">Theme</button>
+      </div>
+    </div>
+  </div>
+  <div class="progress"><span id="progress-bar"></span></div>
+</header>
+
+<main class="wrap">
+  <div class="filters">
+    <input type="search" id="f-search" placeholder="Search questions, options, or a number (e.g. 42)" aria-label="Search">
+    <select id="f-session" aria-label="Session filter"><option value="">All sessions</option></select>
+    <select id="f-status" aria-label="Status filter">
+      <option value="all">All questions</option>
+      <option value="unanswered">Unanswered</option>
+      <option value="incorrect">Incorrect</option>
+      <option value="bookmarked">Bookmarked</option>
+    </select>
+  </div>
+  <div class="meta-line">
+    <span id="count-line"></span>
+    <button type="button" class="btn" id="btn-copy" hidden>Copy as text</button>
+  </div>
+  <div id="list"></div>
+</main>
+<footer class="wrap" id="foot"></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const EXAM = {"title":"IT Passport Exam - 2024","year":"2024","generatedAt":"2026-10-09T09:07:54.408Z","questions":[{"id":"2024S-Q01","session":"Spring 2024","category":null,"questionNumber":1,"prompt":"Sound signals are digitized. Sampling is performed at Time 1 through Time 5 in the figure below, and four-level quantization is performed; in other words, the levels closest to the sampling point are selected. After that, two-bit encoding is performed. The result is “11 01 00 10 11”. When digitization is performed in the same way, which of the following figures represents the sound signal that results in “01 00 10 11 01”?","hasDiagram":true,"figureMissing":true,"figureHint":"Decode the target code the same way as the example (00 = lowest of the four levels, 11 = highest): 01 00 10 11 01 → levels 1, 0, 2, 3, 1. Figure B is the waveform that sits near level 1 at Time 1, dips to the lowest level at Time 2, rises to level 2 at Time 3, peaks at the top level at Time 4, and falls back to level 1 at Time 5.","options":[{"key":"a","text":"[Figure A]"},{"key":"b","text":"[Figure B]"},{"key":"c","text":"[Figure C]"},{"key":"d","text":"[Figure D]"}],"correctAnswer":"b","explanation":"b) [Figure B]"},{"id":"2024S-Q02","session":"Spring 2024","category":null,"questionNumber":2,"prompt":"Which of the following is the logical operation that is equivalent to the truth table below?\n\n| Input A | Input B | Output |\n| ------- | ------- | ------ |\n| 0       | 0       | 0      |\n| 0       | 1       | 0      |\n| 1       | 0       | 0      |\n| 1       | 1       | 1      |","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"AND"},{"key":"b","text":"NOT"},{"key":"c","text":"OR"},{"key":"d","text":"XOR"}],"correctAnswer":"a","explanation":"a) AND"},{"id":"2024S-Q03","session":"Spring 2024","category":null,"questionNumber":3,"prompt":"Which of the following is a standard encoding system that is widely used for handling multilingual text and symbols around the world as a single character set?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"ASCII"},{"key":"b","text":"EBCDIC"},{"key":"c","text":"EUC"},{"key":"d","text":"Unicode"}],"correctAnswer":"d","explanation":"d) Unicode"},{"id":"2024S-Q04","session":"Spring 2024","category":null,"questionNumber":4,"prompt":"When a chairperson and a secretary are selected from three (3) candidates with a method that allows dual roles, there are three (3) ways for the selection of a single chairperson and three (3) ways for the selection of a secretary, so in total, there are nine (9) combinations for the selection of a chairperson and a secretary. When a chairperson and a secretary are selected from five (5) candidates with a method that allows dual roles, how many combinations for the selection are there?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"5"},{"key":"b","text":"10"},{"key":"c","text":"20"},{"key":"d","text":"25"}],"correctAnswer":"d","explanation":"d) 25"},{"id":"2024S-Q05","session":"Spring 2024","category":null,"questionNumber":5,"prompt":"The function `calGrade` receives the student’s score and returns the grade. The score is an integer. If the score is greater than or equal to 80, the function `calGrade` returns “A”; if the score is between 65 and 79, it returns “B”; between 50 and 64, it returns “C”; and otherwise, it returns “Fail.” Which of the following is an appropriate piece of code to be inserted in `_______` in the program?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"`score ≥ 65`"},{"key":"b","text":"`score ≥ 65 or score ≤ 79`"},{"key":"c","text":"`score ≤ 65 and score ≥ 79`"},{"key":"d","text":"`score ≤ 79`"}],"correctAnswer":"a","explanation":"a) `score ≥ 65`"},{"id":"2024S-Q06","session":"Spring 2024","category":null,"questionNumber":6,"prompt":"The procedure described below is sequentially performed for two (2) variables x and y, starting with step (1). When the procedure is completed, what is the resulting value of x?\n\n**[Procedure]**\n(1) Assign 2 to x and 3 to y.\n(2) Subtract 1 from the value of y, and assign the resulting value to y.\n(3) Add the values of x and y, and assign the resulting value to x.\n(4) If the value of y is 1, complete the procedure. Otherwise, return to step (2).","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"4"},{"key":"b","text":"5"},{"key":"c","text":"7"},{"key":"d","text":"8"}],"correctAnswer":"b","explanation":"b) 5"},{"id":"2024S-Q07","session":"Spring 2024","category":null,"questionNumber":7,"prompt":"There exist four (4) states numbered 1 through 4. The four (4) states are connected as shown in the figure below, and the state transition occurs in a clockwise or counter-clockwise direction. If the current state is 1, which of the following is the state that is reached after the procedure below is performed twice?\n\n**[Procedure]**\nThe number of the current state is multiplied by 11, and the result is divided by 3. The process below is performed based on the remainder of the division.\n• When the remainder is 0, a transition to the next state occurs in the clockwise direction.\n• When the remainder is 1, a transition to the next state occurs in the counter-clockwise direction.\n• When the remainder is 2, a transition to the second state occurs in the clockwise direction.","hasDiagram":true,"figureMissing":true,"figureHint":"The figure arranges the four states in a ring: 1 → 2 → 3 → 4 → 1 in the clockwise direction. First pass: 1 × 11 = 11, and 11 ÷ 3 leaves remainder 2, so move two states clockwise to 3. Second pass: 3 × 11 = 33, remainder 0, so move one state clockwise to 4 (d).","options":[{"key":"a","text":"1"},{"key":"b","text":"2"},{"key":"c","text":"3"},{"key":"d","text":"4"}],"correctAnswer":"d","explanation":"d) 4"},{"id":"2024S-Q08","session":"Spring 2024","category":null,"questionNumber":8,"prompt":"There is a device that stacks products from the bottom to the top, and removes the products sequentially from the top. There are only two (2) operations for this device.\n\nPUSH x: Stacks one (1) product x.\nPOP: Removes one (1) product from the top.\nNothing is stacked at the start, and three (3) products arrive in the order A, B, then C. If only one (1) device is used, when the products are removed with POP operations, which of the following is an impossible order of removal?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A, B, C"},{"key":"b","text":"B, A, C"},{"key":"c","text":"C, A, B"},{"key":"d","text":"C, B, A"}],"correctAnswer":"c","explanation":"c) C, A, B"},{"id":"2024S-Q09","session":"Spring 2024","category":null,"questionNumber":9,"prompt":"The program performs circular left shifting on the array elements. For example, after circular left shifting, the initial array `{1, 2, 3, 4, 5}` becomes `{2, 3, 4, 5, 1}`. Which of the following is an appropriate combination of pieces of code to be inserted in `___A___` and `___B___` in the program?\n\n**[Program]**\n`integer[]: array ← {1, 2, 3, 4, 5}`\n`integer: i`\n`integer: tmp`\n`tmp ← array[1]`\n`for (increase i from 2 to the number of elements in the array by 1)`\n&nbsp;&nbsp;&nbsp;&nbsp;`array[___A___] ← array[i]`\n`endfor`\n`___B___ ← tmp`","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: `i + 1`, B: `array[the number of elements of array - 1]`"},{"key":"b","text":"A: `i + 1`, B: `array[the number of elements of array]`"},{"key":"c","text":"A: `i - 1`, B: `array[the number of elements of array - 1]`"},{"key":"d","text":"A: `i - 1`, B: `array[the number of elements of array]`"}],"correctAnswer":"d","explanation":"d) A: `i - 1`, B: `array[the number of elements of array]`"},{"id":"2024S-Q10","session":"Spring 2024","category":null,"questionNumber":10,"prompt":"Which of the following is the unique value that is sequentially assigned to a memory location in order to identify the location of instructions or data stored in the main memory of a computer?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Address"},{"key":"b","text":"Counter"},{"key":"c","text":"Index"},{"key":"d","text":"Pointer"}],"correctAnswer":"a","explanation":"a) Address"},{"id":"2024S-Q11","session":"Spring 2024","category":null,"questionNumber":11,"prompt":"Which of the following is an appropriate explanation of HDMI?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is an interface for an AV device that handles the input and output of video, audio, and control signals through a single cable."},{"key":"b","text":"It is an interface that makes use of the infrared rays used in the exchange of information between cell phones."},{"key":"c","text":"It is a serial interface that connects an external hard disk or such other devices through a cable."},{"key":"d","text":"It is a wireless interface that makes use of radio waves and can perform communication even when there is a slight shielding."}],"correctAnswer":"a","explanation":"a) It is an interface for an AV device that handles the input and output of video, audio, and control signals through a single cable."},{"id":"2024S-Q12","session":"Spring 2024","category":null,"questionNumber":12,"prompt":"Which of the following is an appropriate explanation of GPU?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is an index that shows the throughput of a CPU in terms of how many billions of instructions it can execute per second."},{"key":"b","text":"It is a frequency signal that synchronizes the arithmetic processing of CPUs."},{"key":"c","text":"It is a storage unit that is placed between a CPU and a main memory, and has a higher reading and writing speed than the main memory."},{"key":"d","text":"It is a processing unit that is used instead of a CPU to accelerate processing such as image processing for 3D graphics."}],"correctAnswer":"d","explanation":"d) It is a processing unit that is used instead of a CPU to accelerate processing such as image processing for 3D graphics."},{"id":"2024S-Q13","session":"Spring 2024","category":null,"questionNumber":13,"prompt":"If a process from when a PC is powered on to when it becomes ready to use is divided into four (4) stages, which of the following is the stage that is performed first?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Loading a BIOS"},{"key":"b","text":"Loading an OS"},{"key":"c","text":"Loading resident application software such as antivirus software"},{"key":"d","text":"Loading device drivers"}],"correctAnswer":"a","explanation":"a) Loading a BIOS"},{"id":"2024S-Q14","session":"Spring 2024","category":null,"questionNumber":14,"prompt":"Which of the following is an appropriate description concerning the reliability of a system or a device?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Controlling a system in a safe state in order to minimize damage when a fault occurs in a device is called foolproof."},{"key":"b","text":"Reducing the probability of occurrence of a fault in a device by using high-quality and high-reliability parts and elements is called fail-safe."},{"key":"c","text":"Enabling continuation of system processing when a fault occurs in a system due to an error is called fault tolerance."},{"key":"d","text":"Taking measures in the design stage so that humans do not make mistakes in system operation, or no faults or failures occur even if they make mistakes is called fail soft."}],"correctAnswer":"c","explanation":"c) Enabling continuation of system processing when a fault occurs in a system due to an error is called fault tolerance."},{"id":"2024S-Q15","session":"Spring 2024","category":null,"questionNumber":15,"prompt":"Among the costs below concerning a sales management system, which of the following is the list that contains all costs that are included in TCO?\n\n(i) The purchase cost for products handled by the sales management system\n(ii) The shipment cost for products handled by the sales management system\n(iii) The software maintenance cost for the sales management system\n(iv) The hardware maintenance cost for the sales management system","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"(i), (ii)"},{"key":"b","text":"(i), (iv)"},{"key":"c","text":"(ii), (iii)"},{"key":"d","text":"(iii), (iv)"}],"correctAnswer":"d","explanation":"d) (iii), (iv)"},{"id":"2024S-Q16","session":"Spring 2024","category":null,"questionNumber":16,"prompt":"In a web service and other services, in order to increase reliability and process a large volume of accesses from users, which of the following is a technique that links multiple computers and makes them work as if they were a single computer?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Clustering"},{"key":"b","text":"Spooling"},{"key":"c","text":"Buffering"},{"key":"d","text":"Mirroring"}],"correctAnswer":"a","explanation":"a) Clustering"},{"id":"2024S-Q17","session":"Spring 2024","category":null,"questionNumber":17,"prompt":"In a file system with the hierarchy structure shown in the Figure, when `..\\..\\DIRB\\Fn.txt` is specified from the directory marked with an \\* (the current directory), which of the following is the file that is referenced?","hasDiagram":true,"figureMissing":true,"figureHint":"`..\\..` goes up two levels from the current directory (*). From there, `DIRB\\Fn.txt` is the Fn.txt directly inside the DIRB directory at that level, which the figure labels (4) (d).","options":[{"key":"a","text":"Fn.txt at (1)"},{"key":"b","text":"Fn.txt at (2)"},{"key":"c","text":"Fn.txt at (3)"},{"key":"d","text":"Fn.txt at (4)"}],"correctAnswer":"d","explanation":"d) Fn.txt at (4)"},{"id":"2024S-Q18","session":"Spring 2024","category":null,"questionNumber":18,"prompt":"Which of the following is an appropriate description concerning OSS (Open Source Software)?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Use in industries that require high quality, such as the medical industry, is prohibited."},{"key":"b","text":"Various types of license exist, and the terms of license must be observed when the software is used."},{"key":"c","text":"If the source code is released on the Internet, the software can be called OSS even if redistribution is prohibited."},{"key":"d","text":"The software must not be sold for a fee."}],"correctAnswer":"b","explanation":"b) Various types of license exist, and the terms of license must be observed when the software is used."},{"id":"2024S-Q19","session":"Spring 2024","category":null,"questionNumber":19,"prompt":"Which of the following is a term that means the validation of a software license by using the product ID and the user’s hardware information, in order to prevent unauthorized use of the software?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Activation"},{"key":"b","text":"Cloud computing"},{"key":"c","text":"Streaming"},{"key":"d","text":"Fragmentation"}],"correctAnswer":"a","explanation":"a) Activation"},{"id":"2024S-Q20","session":"Spring 2024","category":null,"questionNumber":20,"prompt":"Sales data by month for each branch is evaluated. In the “Evaluation” field for each branch by month, if the amount of sales at the branch is below the average sales amount of branches A through C for the month, the symbol “X” is to be displayed, and if the amount is above or equal to the average, the symbol “O” is to be displayed. Which of the following is an appropriate expression to be entered in cell C3? Here, the expression that is entered in cell C3 is copied and used in cell D3, cell E3, cells C5 through E5, and cells C7 through E7.","hasDiagram":true,"figureMissing":true,"figureHint":"The worksheet is not in the source. Branches A, B and C are in columns C, D and E; each month's sales are in rows 2, 4 and 6, with that month's Evaluation row directly below (rows 3, 5 and 7). The formula compares the branch's own cell (`C2`, fully relative) with the average of its row with the columns locked (`AVERAGE($C2:$E2)`) and shows X when it is below average: `IF(C2 \u003c AVERAGE($C2:$E2), 'X', 'O')` (d).","options":[{"key":"a","text":"`IF($C2 \u003c AVERAGE(C2:E2), 'O', 'X')`"},{"key":"b","text":"`IF($C2 \u003c AVERAGE(C2:E2), 'X', 'O')`"},{"key":"c","text":"`IF(C2 \u003c AVERAGE($C2:$E2), 'O', 'X')`"},{"key":"d","text":"`IF(C2 \u003c AVERAGE($C2:$E2), 'X', 'O')`"}],"correctAnswer":"d","explanation":"d) `IF(C2 \u003c AVERAGE($C2:$E2), 'X', 'O')`"},{"id":"2024S-Q21","session":"Spring 2024","category":null,"questionNumber":21,"prompt":"Which of the following is an appropriate description about the function keys of a PC?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"They are the keys where specific functions are assigned for each application and OS."},{"key":"b","text":"They display a keyboard shape on a screen and enable input processing with software."},{"key":"c","text":"They have a security role and are keys for performing encryption and decryption."},{"key":"d","text":"They are information to identify specific lines uniquely in a database."}],"correctAnswer":"a","explanation":"a) They are the keys where specific functions are assigned for each application and OS."},{"id":"2024S-Q22","session":"Spring 2024","category":null,"questionNumber":22,"prompt":"Which of the following is a technology that is also used in measures against tampering of software in IoT devices and verifies the digital signature of the OS, firmware, or other such software when it is started, and only executes the software if the verification is successful?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"GPU"},{"key":"b","text":"RAID"},{"key":"c","text":"Secure boot"},{"key":"d","text":"Reboot"}],"correctAnswer":"c","explanation":"c) Secure boot"},{"id":"2024S-Q23","session":"Spring 2024","category":null,"questionNumber":23,"prompt":"Which of the following is the appropriate description concerning a smart meter that is an IoT device?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is embedded in a car navigation system or a game controller, and measures the extent of change in speed."},{"key":"b","text":"It is installed in a house or other such place and automatically measures consumption of electricity and gas, and sends the data to the supplier by using a cellular network, etc."},{"key":"c","text":"It deletes the data that is stored on a mobile terminal such as a smartphone or mobile PC from a remote location via a network."},{"key":"d","text":"In addition to counting the number of steps, it identifies the walking route, detects the walking speed and height variations in the route, and calculates the energy consumed."}],"correctAnswer":"b","explanation":"b) It is installed in a house or other such place and automatically measures consumption of electricity and gas, and sends the data to the supplier by using a cellular network, etc."},{"id":"2024S-Q24","session":"Spring 2024","category":null,"questionNumber":24,"prompt":"Which of the following is the appropriate reason for using a style sheet in the creation of a website?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"The data between the web server and the web browser can be exchanged in a safe manner."},{"key":"b","text":"The users can be notified of update to the website."},{"key":"c","text":"The users of the website can be identified."},{"key":"d","text":"The appearance of multiple web pages can be easily unified."}],"correctAnswer":"d","explanation":"d) The appearance of multiple web pages can be easily unified."},{"id":"2024S-Q25","session":"Spring 2024","category":null,"questionNumber":25,"prompt":"A technique that represents a figure with pixels is considered. In the case of Fig. 1, when each row of the figure of 3 right and B and W are respectively written for black and white, the result is “BWBBBBBWB” (9 characters). Then, when a succession of n characters of “B”s or “W”s is represented as “Bn” or “Wn” respectively (where n is an integer of 2 or greater), Fig. 1 can be represented as “BWB5WB” (6 characters) and the compression ratio in this case is defined as 6/9 or 66.7%. When the figure of 5 is compressed using the same technique, what is the compression ratio in percentage?","hasDiagram":true,"figureMissing":true,"figureHint":"The figure of \"5\" is a 5 × 5 pixel grid, so it is 25 characters before compression. Written with the same run-length rule it becomes 13 characters, so the compression ratio is 13 / 25 = 52% (b).","options":[{"key":"a","text":"48.0"},{"key":"b","text":"52.0"},{"key":"c","text":"76.0"},{"key":"d","text":"88.0"}],"correctAnswer":"b","explanation":"b) 52.0"},{"id":"2024S-Q26","session":"Spring 2024","category":null,"questionNumber":26,"prompt":"There are “Sales”, “Customer” and “Product” tables in a relational database. Among lists A through C, which of the following contains all and only the lists that can be created from the data in these tables?\n\nA: The list of customers who bought more than a certain amount of money during a certain period in the past\nB: The list of products that were out of stock in the previous month\nC: The ranking list for sales amount by product in the previous month","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A, B"},{"key":"b","text":"A, B, C"},{"key":"c","text":"A, C"},{"key":"d","text":"B, C"}],"correctAnswer":"c","explanation":"c) A, C"},{"id":"2024S-Q27","session":"Spring 2024","category":null,"questionNumber":27,"prompt":"In the description below concerning the design process of a relational database, which of the following is an appropriate combination of terms to be inserted into blanks A through C?\n\n\"Analyze the target business operations, identify the data which is used there, and create [A], consisting of entities and [B]. On the basis of the created [A], design [C].\"","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: instances, B: E-R diagram, C: functions"},{"key":"b","text":"A: instances, B: flowchart, C: tables"},{"key":"c","text":"A: relationships, B: E-R diagram, C: tables"},{"key":"d","text":"A: relationships, B: flowchart, C: functions"}],"correctAnswer":"c","explanation":"c) A: relationships, B: E-R diagram, C: tables"},{"id":"2024S-Q28","session":"Spring 2024","category":null,"questionNumber":28,"prompt":"Which of the following is an appropriate combination of relational database manipulations I through III and relational operations?\n\nI: Extracting the specified field (column)\nII: Extracting the specified record (row)\nIII: Combining multiple tables into one (1) table","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"I: Join, II: Projection, III: Selection"},{"key":"b","text":"I: Projection, II: Join, III: Selection"},{"key":"c","text":"I: Projection, II: Selection, III: Join"},{"key":"d","text":"I: Selection, II: Projection, III: Join"}],"correctAnswer":"c","explanation":"c) I: Projection, II: Selection, III: Join"},{"id":"2024S-Q29","session":"Spring 2024","category":null,"questionNumber":29,"prompt":"Which of the following is the appropriate explanation of commit in transaction processing?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"When a transaction attempts to update shared data, other transactions are blocked from updating this data."},{"key":"b","text":"The update is confirmed in the database. It is used when a transaction is processed normally."},{"key":"c","text":"The database is returned to the status prior to the start of a transaction. It is used when the transaction is not processed normally for some reason."},{"key":"d","text":"Multiple tables are made into one (1) table by using the columns as keys that relate the tables to each other."}],"correctAnswer":"b","explanation":"b) The update is confirmed in the database. It is used when a transaction is processed normally."},{"id":"2024S-Q30","session":"Spring 2024","category":null,"questionNumber":30,"prompt":"When an e-mail is sent to multiple recipients, there are cases that no recipient of the e-mail should know the e-mail addresses of other recipients. In such cases, which of the following is an appropriate place where the e-mail addresses of the multiple recipients are entered?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Bcc"},{"key":"b","text":"Cc"},{"key":"c","text":"To"},{"key":"d","text":"Both To and Bcc"}],"correctAnswer":"a","explanation":"a) Bcc"},{"id":"2024S-Q31","session":"Spring 2024","category":null,"questionNumber":31,"prompt":"Which of the following is **not** an appropriate description of online storage?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It can be used not only from a computer, but also from a smartphone or a tablet, if the device is connected to the Internet."},{"key":"b","text":"There is a free service that can be used with limited capacity and functionalities."},{"key":"c","text":"There is a service that allows multiple registered users to share and edit the same file."},{"key":"d","text":"If the capacity of the auxiliary storage unit built into the user’s computer or tablet is increased, the capacity of online storage will also increase automatically."}],"correctAnswer":"d","explanation":"d) If the capacity of the auxiliary storage unit built into the user’s computer or tablet is increased, the capacity of online storage will also increase automatically."},{"id":"2024S-Q32","session":"Spring 2024","category":null,"questionNumber":32,"prompt":"Which of the following is an example of damage incurred by the theft of cookies by a cross-site scripting attack or other attack?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"The PC becomes infected by a virus."},{"key":"b","text":"The files on the PC are sent to an outside destination."},{"key":"c","text":"Web service accounts are hijacked."},{"key":"d","text":"Intrusion into the network takes place over the wireless LAN."}],"correctAnswer":"c","explanation":"c) Web service accounts are hijacked."},{"id":"2024S-Q33","session":"Spring 2024","category":null,"questionNumber":33,"prompt":"When a web page with URL “http://srv01.itpec.org/abc.html” is accessed on the Internet, what does “srv01” in the URL stand for?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"The fact that “itpec.org” is a web service"},{"key":"b","text":"The file name of the web page where an access is requested"},{"key":"c","text":"The fact that HTTP or HTTPS can be specified as a communication protocol"},{"key":"d","text":"The host name of a computer that belongs to the domain name “itpec.org”"}],"correctAnswer":"d","explanation":"d) The host name of a computer that belongs to the domain name “itpec.org”"},{"id":"2024S-Q34","session":"Spring 2024","category":null,"questionNumber":34,"prompt":"A large number of IP addresses are required in order to connect a massive number of IoT devices to the Internet, so the decision was made to use the Internet Protocol with IP addresses that have a length of 128 bits. Which of the following is this protocol?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"IPv4"},{"key":"b","text":"IPv5"},{"key":"c","text":"IPv6"},{"key":"d","text":"IPv8"}],"correctAnswer":"c","explanation":"c) IPv6"},{"id":"2024S-Q35","session":"Spring 2024","category":null,"questionNumber":35,"prompt":"Which of the following is a definition of a zero-day attack that is a threat to information security?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It stops the target system of the attack within 24 hours from the start of the attack."},{"key":"b","text":"It causes the onset immediately after the infection by using a virus without an incubation period."},{"key":"c","text":"It exploits vulnerability before any countermeasure against the software vulnerability is made public."},{"key":"d","text":"It immediately obtains confidential information from a third party through social engineering or eavesdropping."}],"correctAnswer":"c","explanation":"c) It exploits vulnerability before any countermeasure against the software vulnerability is made public."},{"id":"2024S-Q36","session":"Spring 2024","category":null,"questionNumber":36,"prompt":"Which of the following is an appropriate action for the secure use of a smartphone?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Using it without updating OS and using the same version of the OS as at the time of purchase"},{"key":"b","text":"Enhancing the functions by making alterations such as jailbreak"},{"key":"c","text":"Setting up a feature that locks the screen with a password"},{"key":"d","text":"Downloading applications that are considered to be useful from any web site"}],"correctAnswer":"c","explanation":"c) Setting up a feature that locks the screen with a password"},{"id":"2024S-Q37","session":"Spring 2024","category":null,"questionNumber":37,"prompt":"Security risk treatment in ISMS includes risk transfer, risk avoidance, risk acceptance, and risk reduction. Which of the following is an example of risk avoidance?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A security measure was taken, which lowered the possibility of problems arising."},{"key":"b","text":"The company took out insurance in case a problem arises and causes damage."},{"key":"c","text":"The risk was confirmed to be small, and it was decided that damage would be borne by the company when a problem arises."},{"key":"d","text":"The company withdrew from the services that carried high risk."}],"correctAnswer":"d","explanation":"d) The company withdrew from the services that carried high risk."},{"id":"2024S-Q38","session":"Spring 2024","category":null,"questionNumber":38,"prompt":"Which of the following is an appropriate description of the beginning of a URL indicating that TLS is used for communication between a web browser and a web server?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"http://"},{"key":"b","text":"https://"},{"key":"c","text":"shttp://"},{"key":"d","text":"ssl://"}],"correctAnswer":"b","explanation":"b) https://"},{"id":"2024S-Q39","session":"Spring 2024","category":null,"questionNumber":39,"prompt":"Which of the following is a technique that is used to detect that the received data has been tampered with?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Compression"},{"key":"b","text":"Digital signature"},{"key":"c","text":"Password authentication"},{"key":"d","text":"Filtering"}],"correctAnswer":"b","explanation":"b) Digital signature"},{"id":"2024S-Q40","session":"Spring 2024","category":null,"questionNumber":40,"prompt":"Among I through III below, which of the following lists all and only the appropriate measures for preventing a PC from getting infected with viruses?\n\nI. Applying a security patch to software\nII. Striping across hard disks\nIII. Educating users about security","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"I"},{"key":"b","text":"I, II"},{"key":"c","text":"I, III"},{"key":"d","text":"II, III"}],"correctAnswer":"c","explanation":"c) I, III"},{"id":"2024S-Q41","session":"Spring 2024","category":null,"questionNumber":41,"prompt":"Which of the following is an appropriate example of phishing?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"An attacker’s act of sending a command via network to a virus-infected PC and having it execute an illegal program"},{"key":"b","text":"Sending an e-mail that pretends to be from a financial institution, directing a user to a false web site, and acquiring a password"},{"key":"c","text":"Identifying a password by using a dictionary data that enumerates strings that are likely to be used as a password"},{"key":"d","text":"Sending a large number of packets from multiple computers to a target server and disabling the function of the server"}],"correctAnswer":"b","explanation":"b) Sending an e-mail that pretends to be from a financial institution, directing a user to a false web site, and acquiring a password"},{"id":"2024S-Q42","session":"Spring 2024","category":null,"questionNumber":42,"prompt":"Which of the following is an appropriate description concerning behavioral detection technology for protecting systems from unknown threats such as zero-day attacks?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It detects that a PC has not been used for a certain period of time, darkens the screen automatically, and displays a changing image."},{"key":"b","text":"It suspends use of an account when it detects that an incorrect password is entered on a web site more than a set number of times."},{"key":"c","text":"It continually monitors the activity of programs and stops any program with any suspicious activity, such as unusual communication to an outside destination."},{"key":"d","text":"It changes users’ input on a web site into safe character strings when it detects any harmful character string that could cause malfunction."}],"correctAnswer":"c","explanation":"c) It continually monitors the activity of programs and stops any program with any suspicious activity, such as unusual communication to an outside destination."},{"id":"2024S-Q43","session":"Spring 2024","category":null,"questionNumber":43,"prompt":"Which of the following is appropriate as the characteristic of single sign-on?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is an effective countermeasure for information leakage because data is processed and stored on a server side, and data does not remain on devices."},{"key":"b","text":"It implements high availability because when the data is saved, it is automatically distributed and stored on multiple disks."},{"key":"c","text":"It implements high confidentiality because it employs authentication that uses fingerprint and iris in addition to a password."},{"key":"d","text":"It implements high convenience because once a user is authenticated, he or she is allowed to use multiple services without any more authentication."}],"correctAnswer":"d","explanation":"d) It implements high convenience because once a user is authenticated, he or she is allowed to use multiple services without any more authentication."},{"id":"2024S-Q44","session":"Spring 2024","category":null,"questionNumber":44,"prompt":"Among the descriptions from A through C, which of the following is the list that contains all and only appropriate features of VPN?\n\nA: Devices can communicate with each other by using a VPN wirelessly without passing through any access point.\nB: A VPN uses a public network, etc., but it can be used like a private network of one’s own company.\nC: The security status of computers can be checked by connecting them to a VPN.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A"},{"key":"b","text":"A, C"},{"key":"c","text":"B"},{"key":"d","text":"C"}],"correctAnswer":"c","explanation":"c) B"},{"id":"2024S-Q45","session":"Spring 2024","category":null,"questionNumber":45,"prompt":"When an attacker makes an unauthorized intrusion into a computer, the attacker sometimes changes a program or settings in the computer in order to make further intrusions into the computer easier. Which of the following is the most appropriate term to express the method used by the attacker for further intrusions into the computer?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Tapping"},{"key":"b","text":"Backdoor"},{"key":"c","text":"Phishing"},{"key":"d","text":"Port scan"}],"correctAnswer":"b","explanation":"b) Backdoor"},{"id":"2024S-Q46","session":"Spring 2024","category":null,"questionNumber":46,"prompt":"In order to achieve a non-stop system, which of the following is an appropriate item to be considered during the design of the system architecture?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Partitioning of software into components"},{"key":"b","text":"Encryption of data"},{"key":"c","text":"Reduction in power consumption of hardware"},{"key":"d","text":"Dual redundancy of hardware"}],"correctAnswer":"d","explanation":"d) Dual redundancy of hardware"},{"id":"2024S-Q47","session":"Spring 2024","category":null,"questionNumber":47,"prompt":"A detailed design document of software is created as an output of software detailed design. Which of the following is the person who takes charge of the next process of development upon receipt of this output?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"System auditor"},{"key":"b","text":"System operator in-charge"},{"key":"c","text":"System user"},{"key":"d","text":"Programmer"}],"correctAnswer":"d","explanation":"d) Programmer"},{"id":"2024S-Q48","session":"Spring 2024","category":null,"questionNumber":48,"prompt":"Mr. A, a developer, is analyzing and verifying the internal structure of a program in order to determine whether input data is processed as intended. Which of the following is the test that Mr. A is currently conducting?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"System test"},{"key":"b","text":"Top-down test"},{"key":"c","text":"Black box test"},{"key":"d","text":"White box test"}],"correctAnswer":"d","explanation":"d) White box test"},{"id":"2024S-Q49","session":"Spring 2024","category":null,"questionNumber":49,"prompt":"Among the descriptions A through D concerning software installation, which of the following lists all and only the appropriate descriptions?\n\nA: In a new development, installation is performed without delay by the deadline without the creation of an implementation plan.\nB: After software installation is performed, an implementation plan and an implementation report must be created promptly and agreement obtained.\nC: When software is developed in-house by a company, the scope of impact is internal, so installation is performed after the creation of an implementation plan, and agreement on the implementation plan is obtained after implementation.\nD: When a function is to be added to software in production system, an implementation plan is created for the software with the added function, agreement is obtained, and software installation is performed.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A, C"},{"key":"b","text":"B, C, D"},{"key":"c","text":"B, D"},{"key":"d","text":"D"}],"correctAnswer":"c","explanation":"c) B, D"},{"id":"2024S-Q50","session":"Spring 2024","category":null,"questionNumber":50,"prompt":"Which of the following is the most appropriate term expressing initiatives to improve the services where the development side and the operations side of the system cooperate to proactively automate operations of the system and transition to the new production system, and release new functions?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"DevOps"},{"key":"b","text":"RAD"},{"key":"c","text":"Object-oriented development"},{"key":"d","text":"Test-driven development"}],"correctAnswer":"a","explanation":"a) DevOps"},{"id":"2024A-Q01","session":"Autumn 2024","category":null,"questionNumber":1,"prompt":"Which of the following is the combination of terms or phrases to be inserted into blanks A through C in the description below concerning a method for representing information?\n\n\"Data that represents information by using a continuous, variable physical volume (length, angle, voltage, etc.) is called [A] data, and data that represents information by using discrete numerical values is called [B] data. A CD that is used for the distribution of music and songs is an optical disc medium that stores information as [C] data.\"","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: analog, B: digital, C: analog"},{"key":"b","text":"A: analog, B: digital, C: digital"},{"key":"c","text":"A: digital, B: analog, C: analog"},{"key":"d","text":"A: digital, B: analog, C: digital"}],"correctAnswer":"b","explanation":"b) A: analog, B: digital, C: digital"},{"id":"2024A-Q02","session":"Autumn 2024","category":null,"questionNumber":2,"prompt":"Japanese restaurants in Sapporo and Japanese restaurants in Hakodate are to be searched for together. Which of the following is the logical expression that represents the search condition?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"(“Sapporo” AND “Hakodate”) AND “Japanese restaurant”"},{"key":"b","text":"(“Sapporo” AND “Hakodate”) OR “Japanese restaurant”"},{"key":"c","text":"(“Sapporo” OR “Hakodate”) AND “Japanese restaurant”"},{"key":"d","text":"(“Sapporo” OR “Hakodate”) OR “Japanese restaurant”"}],"correctAnswer":"c","explanation":"c) (“Sapporo” OR “Hakodate”) AND “Japanese restaurant”"},{"id":"2024A-Q03","session":"Autumn 2024","category":null,"questionNumber":3,"prompt":"As shown in the figure below, decimal numbers 2, 5, 10, and 21 are represented using five (5) squares that are black or white.\n\n2 □□□■□\n5 □□■□■\n10 □■□■□\n21 ■□■□■\nA white square indicates 0, and a black square indicates a different positive value that is determined depending on the position of the square. The sum total of the values of the five (5) squares represents a decimal number. Which of the following is the decimal number that is represented by ■■□□□?","hasDiagram":true,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"12"},{"key":"b","text":"20"},{"key":"c","text":"24"},{"key":"d","text":"30"}],"correctAnswer":"c","explanation":"c) 24"},{"id":"2024A-Q04","session":"Autumn 2024","category":null,"questionNumber":4,"prompt":"When a path goes from node A1 to node C2 in Fig. 1 and the passing nodes are counted as shown in Fig. 2, there are three shortest paths with the minimum number of passing nodes. How many shortest paths are there available to go from node A1 to node D4 via node C2?","hasDiagram":true,"figureMissing":true,"figureHint":"Fig. 1 is a grid of nodes with rows A–D and columns 1–4, and a shortest path only moves toward the destination. From A1 to C2 (two rows down, one column across) there are 3 shortest paths, as Fig. 2 counts. From C2 to D4 (one row down, two columns across) there are also 3. Paths via C2 = 3 × 3 = 9 (b).","options":[{"key":"a","text":"6"},{"key":"b","text":"9"},{"key":"c","text":"12"},{"key":"d","text":"20"}],"correctAnswer":"b","explanation":"b) 9"},{"id":"2024A-Q05","session":"Autumn 2024","category":null,"questionNumber":5,"prompt":"Which of the following is an appropriate description concerning machine language?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A program that is written in Fortran or C is converted into machine language and then executed."},{"key":"b","text":"Machine language is a high-level language."},{"key":"c","text":"Machine language expresses a program with sequences of decimal numbers."},{"key":"d","text":"Most of application software is still programmed in machine language."}],"correctAnswer":"a","explanation":"a) A program that is written in Fortran or C is converted into machine language and then executed."},{"id":"2024A-Q06","session":"Autumn 2024","category":null,"questionNumber":6,"prompt":"A power company charges electricity bill shown in the table below.\n\n| Units used per month | Per unit cost (in 1/100 US$) |\n| -------------------- | ---------------------------- |\n| First 100 units      | 5                            |\n| Next 200 units       | 10                           |\n| Over 300 units       | 15                           |\n\nFunction `computeBill` receives the number of units used per month as an argument and returns the electricity bill in 1/100 dollars. Which of the following is an appropriate combination of pieces of code to be inserted in `___A___` and `___B___` in the program?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: `(units - 100) × 5`, B: `100 × 5 + (units - 100) × 10 + (units - 200) × 15`"},{"key":"b","text":"A: `(units - 100) × 5`, B: `100 × 5 + 200 × 10 + (units - 300) × 15`"},{"key":"c","text":"A: `units × 5`, B: `100 × 5 + (units - 100) × 10 + (units - 200) × 15`"},{"key":"d","text":"A: `units × 5`, B: `100 × 5 + 200 × 10 + (units - 300) × 15`"}],"correctAnswer":"d","explanation":"d) A: `units × 5`, B: `100 × 5 + 200 × 10 + (units - 300) × 15`"},{"id":"2024A-Q07","session":"Autumn 2024","category":null,"questionNumber":7,"prompt":"In a markup language, with the purpose of displaying on a screen and printing, it is possible to directly embed not only the document content, but also the document structure and layout information, and the character font and size information. Which of the following is classified into such a markup language?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"C"},{"key":"b","text":"HTML"},{"key":"c","text":"SQL"},{"key":"d","text":"URL"}],"correctAnswer":"b","explanation":"b) HTML"},{"id":"2024A-Q08","session":"Autumn 2024","category":null,"questionNumber":8,"prompt":"The procedure `draw` receives a non-negative integer number n for input. When the value of n is 6, the procedure outputs the six lines shown below. Which of the following is an appropriate combination of pieces of code to be inserted in `___A___` and `___B___` in the program?\n\n**[Output]**\n1\n1 2\n1 2 3\n1 2 3 4\n1 2 3 4 5\n1 2 3 4 5 6\n**[Program]**\n`○ draw(integer: n)`\n`integer: i, k`\n`i ← 1`\n`while(i ≤ n) /* The while loop is skipped if n is zero. */`\n`___A___`\n`while(k ≤ i)`\n`output the value of k and a space`\n`___B___`\n`endwhile`\n`output the line break`\n`i ← i + 1`\n`endwhile`","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: `i ← 1`, B: `i ← i + 1`"},{"key":"b","text":"A: `k ← 1`, B: `k ← k + 1`"},{"key":"c","text":"A: `i ← i + 1`, B: `i ← k`"},{"key":"d","text":"A: `k ← k + 1`, B: `k ← i + 1`"}],"correctAnswer":"b","explanation":"b) A: `k ← 1`, B: `k ← k + 1`"},{"id":"2024A-Q09","session":"Autumn 2024","category":null,"questionNumber":9,"prompt":"On a desk that is only large enough to place four (4) files at the same time, six (6) files, A through F, are used to perform a task. When four (4) files are already placed on the desk, the least recently used file must be placed back into the drawer before the fifth file is placed on the desk. When the files are used in the sequence A, B, C, D, B, A, E, A, B, F, which of the following is the last file placed back into the drawer?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A"},{"key":"b","text":"B"},{"key":"c","text":"D"},{"key":"d","text":"E"}],"correctAnswer":"c","explanation":"c) D"},{"id":"2024A-Q10","session":"Autumn 2024","category":null,"questionNumber":10,"prompt":"When USB memory or other such external recordable media is connected to a PC, which of the following is an OS function that automatically executes programs or plays movies on the media and can also cause malware infection?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Autocorrect"},{"key":"b","text":"Autocomplete"},{"key":"c","text":"Auto filter"},{"key":"d","text":"Autorun"}],"correctAnswer":"d","explanation":"d) Autorun"},{"id":"2024A-Q11","session":"Autumn 2024","category":null,"questionNumber":11,"prompt":"Which of the following is the most appropriate description concerning deep learning?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is a method for studying according to proficiency level that uses textbooks published on the Internet and is not restricted by geographical location nor time."},{"key":"b","text":"A computer analyzes a large volume of data, finds patterns, and makes inferences or decisions by itself by using a neural network."},{"key":"c","text":"An appropriate response is provided based on specialist knowledge in specific fields that are systematically categorized."},{"key":"d","text":"The level of difficulty and the knowledge and skills required of each individual to solve problems are estimated according to his/her proficiency level and understanding."}],"correctAnswer":"b","explanation":"b) A computer analyzes a large volume of data, finds patterns, and makes inferences or decisions by itself by using a neural network."},{"id":"2024A-Q12","session":"Autumn 2024","category":null,"questionNumber":12,"prompt":"Which of the following is an appropriate description concerning a device driver that enables the use of peripheral devices with a PC?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"When a hard disk drive is initialized and the operating system is reinstalled, it is necessary to reinstall device drivers that were installed separately to the operating system."},{"key":"b","text":"When new application software is installed, it is necessary to reinstall all device drivers that this software uses."},{"key":"c","text":"Even if a device driver is no longer required, a user cannot delete the device driver once it is installed."},{"key":"d","text":"It is only necessary to install one (1) device driver for a printer to use all printers regardless of manufacturer or model."}],"correctAnswer":"a","explanation":"a) When a hard disk drive is initialized and the operating system is reinstalled, it is necessary to reinstall device drivers that were installed separately to the operating system."},{"id":"2024A-Q13","session":"Autumn 2024","category":null,"questionNumber":13,"prompt":"Which of the following is a description about a technology that improves the processing performance of a computer and is also called turbo boost?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is placed between the CPU and the main memory, and it remedies the slow performance of the main memory in reading and writing."},{"key":"b","text":"It increases the operation frequency of the cores when the heat that the CPU generates and the power that the CPU consumes have certain margins against their limits."},{"key":"c","text":"It provides multiple sections that serve as cores for performing calculations within the CPU, and it executes several processes simultaneously."},{"key":"d","text":"It shares the CPUs of multiple computers, and executes a large amount of processes in a distributed manner."}],"correctAnswer":"b","explanation":"b) It increases the operation frequency of the cores when the heat that the CPU generates and the power that the CPU consumes have certain margins against their limits."},{"id":"2024A-Q14","session":"Autumn 2024","category":null,"questionNumber":14,"prompt":"Two (2) HDDs are connected to a server for storing data. When at least one (1) of the HDDs is working, stored data needs to be available. Which of the following is an appropriate configuration that should be used for the HDDs?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Striping"},{"key":"b","text":"Data mining"},{"key":"c","text":"Tethering"},{"key":"d","text":"Mirroring"}],"correctAnswer":"d","explanation":"d) Mirroring"},{"id":"2024A-Q15","session":"Autumn 2024","category":null,"questionNumber":15,"prompt":"Which of the following is an appropriate explanation of parallel processing?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"It is the division of a series of processing into processing units that can be executed simultaneously, and the execution of these on multiple CPUs."},{"key":"b","text":"It is the execution of multiple related processes that are grouped together as a single process."},{"key":"c","text":"It is the performing of business logic and database processes on the server side, and the performing of user interface processes on the client side."},{"key":"d","text":"It is the division of processing time for a single CPU into short units, and the sequential allocation of these to multiple applications for execution."}],"correctAnswer":"a","explanation":"a) It is the division of a series of processing into processing units that can be executed simultaneously, and the execution of these on multiple CPUs."},{"id":"2024A-Q16","session":"Autumn 2024","category":null,"questionNumber":16,"prompt":"Which of the following includes all the appropriate measures to enable the execution of processing even in the event of a failure in part of a system?\n\n(1) Configuring HDDs with mirroring\n(2) Minimizing the frequency of maintenance and inspections after stable operation of the system starts\n(3) Grouping multiple redundant network lines into a single high-speed line\n(4) Making power supply redundant with the use of an uninterruptible power supply (UPS), etc.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"(1), (3)"},{"key":"b","text":"(1), (4)"},{"key":"c","text":"(2), (3)"},{"key":"d","text":"(2), (4)"}],"correctAnswer":"b","explanation":"b) (1), (4)"},{"id":"2024A-Q17","session":"Autumn 2024","category":null,"questionNumber":17,"prompt":"It is determined whether an examinee passed or failed by evaluating the score for two (2) subjects X and Y with a spreadsheet software program. The score of each subject is entered in cells A2 and B2 of the worksheet. When passing criteria (1) or (2) is met, “Pass” is displayed in cell C2, and otherwise, “Fail” is displayed. Which of the following is the expression that is entered in cell C2?\n\n**[Passing criteria]**\n(1) The total for Subject X and Subject Y is 120 or more.\n(2) The score for either Subject X or Subject Y is 100.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"`IF(AND((A2+B2) ≥ 120, A2= 100, B2= 100), 'Pass', 'Fail')`"},{"key":"b","text":"`IF(AND((A2+B2) ≥ 120, A2= 100, B2= 100), 'Fail', 'Pass')`"},{"key":"c","text":"`IF(OR((A2+B2) ≥ 120, A2= 100, B2= 100), 'Pass', 'Fail')`"},{"key":"d","text":"`IF(OR((A2+B2) ≥ 120, A2= 100, B2= 100), 'Fail', 'Pass')`"}],"correctAnswer":"c","explanation":"c) `IF(OR((A2+B2) ≥ 120, A2= 100, B2= 100), 'Pass', 'Fail')`"},{"id":"2024A-Q18","session":"Autumn 2024","category":null,"questionNumber":18,"prompt":"Among the descriptions A through C below concerning Open Source Software (OSS), which of the following is the list that contains all and only the appropriate descriptions?\n\nA: Source code can be modified and redistributed.\nB: It is free to obtain source code, but maintenance support for a fee must be used.\nC: The copyright is waived, and it can be used without permission.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A"},{"key":"b","text":"A, C"},{"key":"c","text":"B"},{"key":"d","text":"C"}],"correctAnswer":"a","explanation":"a) A"},{"id":"2024A-Q19","session":"Autumn 2024","category":null,"questionNumber":19,"prompt":"When directories d1 and d2 are placed on a web server as shown in the figure, which of the following descriptions specifies the reference of the web page file f2.html on directory d2 from the web page file f1.html on directory d1 (current directory)?","hasDiagram":true,"figureMissing":true,"figureHint":"In the figure, d1 and d2 are sibling directories (both directly under the same parent). From f1.html in d1, `..` moves up to the parent, then `d2/f2.html` goes down into d2: `../d2/f2.html` (c).","options":[{"key":"a","text":"`./d2/f2.html`"},{"key":"b","text":"`./f2.html`"},{"key":"c","text":"`../d2/f2.html`"},{"key":"d","text":"`d2/../f2.html`"}],"correctAnswer":"c","explanation":"c) `../d2/f2.html`"},{"id":"2024A-Q20","session":"Autumn 2024","category":null,"questionNumber":20,"prompt":"The tax-inclusive prices of products A and B are calculated by using two (2) tax rates that are set in cells D2 and E2 below. The correct expression that should be entered in cell D4 is `$B4*(1.0+D$2)`, but a wrong expression `$B4*(1.0+$D$2)` was entered. When the expression that was entered in cell D4 is copied to cells D5, E4, and E5, which of the following is the numeric value that is displayed in cell E5?","hasDiagram":true,"figureMissing":true,"figureHint":"The worksheet is not in the source: D2 = 0.05 (tax rate 1), E2 = 0.1 (tax rate 2), B4 = 500 (Product A), B5 = 600 (Product B). The wrong formula locks `$D$2`, so every copy uses rate 0.05. E5 becomes `$B5*(1.0+$D$2)` = 600 × 1.05 = 630 (c). The same sheet appears in 2019 Autumn Q17.","options":[{"key":"a","text":"525"},{"key":"b","text":"550"},{"key":"c","text":"630"},{"key":"d","text":"660"}],"correctAnswer":"c","explanation":"c) 630"},{"id":"2024A-Q21","session":"Autumn 2024","category":null,"questionNumber":21,"prompt":"Which of the following is a web browser that is Open Source Software (OSS)?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Apache"},{"key":"b","text":"Firefox"},{"key":"c","text":"Linux"},{"key":"d","text":"Thunderbird"}],"correctAnswer":"b","explanation":"b) Firefox"},{"id":"2024A-Q22","session":"Autumn 2024","category":null,"questionNumber":22,"prompt":"Which of the following is an OS function that executes multiple application programs concurrently on a single PC, such as when a file is downloaded from a website while data is processed with spreadsheet software?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Virtual reality"},{"key":"b","text":"Dual core"},{"key":"c","text":"Dual system"},{"key":"d","text":"Multitasking"}],"correctAnswer":"d","explanation":"d) Multitasking"},{"id":"2024A-Q23","session":"Autumn 2024","category":null,"questionNumber":23,"prompt":"Which of the following is an explanation of the printing method of an inkjet printer?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Printing is performed by directly spraying fine ink particles onto the paper."},{"key":"b","text":"Printing is performed by using printing pins or other such component to hit an ink ribbon against the paper."},{"key":"c","text":"Printing is performed by using the print head to heat ink that melts when it is heated."},{"key":"d","text":"Printing is performed by using laser light to make toner adhere to a photosensitive body."}],"correctAnswer":"a","explanation":"a) Printing is performed by directly spraying fine ink particles onto the paper."},{"id":"2024A-Q24","session":"Autumn 2024","category":null,"questionNumber":24,"prompt":"Which of the following is the copyright protection technology that is used for a DVD-R and an SD card, and allows digital content to be duplicated to recording media only once?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"AR"},{"key":"b","text":"CPRM"},{"key":"c","text":"HDMI"},{"key":"d","text":"MIDI"}],"correctAnswer":"b","explanation":"b) CPRM"},{"id":"2024A-Q25","session":"Autumn 2024","category":null,"questionNumber":25,"prompt":"Which of the following is the unit that represents the resolution when a photograph or a picture is read by a scanner?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"dpi"},{"key":"b","text":"fps"},{"key":"c","text":"pixel"},{"key":"d","text":"ppm"}],"correctAnswer":"a","explanation":"a) dpi"},{"id":"2024A-Q26","session":"Autumn 2024","category":null,"questionNumber":26,"prompt":"From a “Product” table and “Sales” table that are managed with a relational database, which of the following contains all and only the products where the total sales for each product in May is at least 20,000 yen?","hasDiagram":true,"figureMissing":true,"figureHint":"The \"Product\" and \"Sales\" tables are not in the source. Totalling each product's sales in May from the \"Sales\" table, only Products B and C reach at least 20,000 yen (c).","options":[{"key":"a","text":"Product A, Product B, Product C"},{"key":"b","text":"Product A, Product B, Product C, Product D"},{"key":"c","text":"Product B, Product C"},{"key":"d","text":"Product C"}],"correctAnswer":"c","explanation":"c) Product B, Product C"},{"id":"2024A-Q27","session":"Autumn 2024","category":null,"questionNumber":27,"prompt":"Which of the following is a language used for the operation of a relational database?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"FAQ"},{"key":"b","text":"SQL"},{"key":"c","text":"SSL"},{"key":"d","text":"UML"}],"correctAnswer":"b","explanation":"b) SQL"},{"id":"2024A-Q28","session":"Autumn 2024","category":null,"questionNumber":28,"prompt":"Which of the following is an appropriate description concerning foreign keys in a relational database?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A property held by the foreign key is called a unique constraint."},{"key":"b","text":"Duplicate values cannot be set in the fields that are set as foreign keys."},{"key":"c","text":"Multiple foreign keys can be defined in a single table."},{"key":"d","text":"Multiple fields cannot be collectively set as a single foreign key."}],"correctAnswer":"c","explanation":"c) Multiple foreign keys can be defined in a single table."},{"id":"2024A-Q29","session":"Autumn 2024","category":null,"questionNumber":29,"prompt":"When designing a database, which of the following is used for the purpose of organizing and representing the relation of data?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"E-R diagram"},{"key":"b","text":"Arrow diagram"},{"key":"c","text":"Gantt chart"},{"key":"d","text":"Flowchart"}],"correctAnswer":"a","explanation":"a) E-R diagram"},{"id":"2024A-Q30","session":"Autumn 2024","category":null,"questionNumber":30,"prompt":"Which of the following is the appropriate combination of terms or phrases to be inserted into blanks A and B in the description below concerning NAT?\n\n\"NAT is often used when an office or a household LAN is connected to the Internet, and it converts between [A] and [B].\"","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A: private IP addresses, B: a MAC address"},{"key":"b","text":"A: private IP addresses, B: a global IP address"},{"key":"c","text":"A: host names, B: a MAC address"},{"key":"d","text":"A: host names, B: a global IP address"}],"correctAnswer":"b","explanation":"b) A: private IP addresses, B: a global IP address"},{"id":"2024A-Q31","session":"Autumn 2024","category":null,"questionNumber":31,"prompt":"When another network such as the Internet is accessed from a network in an office or a household, which of the following fulfills the role of an entrance or an exit to the other network?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Splitter"},{"key":"b","text":"Default gateway"},{"key":"c","text":"Hub"},{"key":"d","text":"Repeater"}],"correctAnswer":"b","explanation":"b) Default gateway"},{"id":"2024A-Q32","session":"Autumn 2024","category":null,"questionNumber":32,"prompt":"Which of the following is an appropriate description concerning encryption of communication when a website with the URL beginning with “https://” is browsed through a PC browser?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Only the communication from the PC to the web server is encrypted."},{"key":"b","text":"Only the communication from the web server to the PC is encrypted."},{"key":"c","text":"The bi-directional communication between the web server and PC is encrypted."},{"key":"d","text":"The direction in which communication will be encrypted depends on the settings of the web server."}],"correctAnswer":"c","explanation":"c) The bi-directional communication between the web server and PC is encrypted."},{"id":"2024A-Q33","session":"Autumn 2024","category":null,"questionNumber":33,"prompt":"When transmitted over the Internet, data is divided into blocks, each of which is transmitted with a header that specifies the destination, the block number, and an error detecting code. Which of the following is the term for such blocks of data?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Domain"},{"key":"b","text":"Packet"},{"key":"c","text":"Port"},{"key":"d","text":"Router"}],"correctAnswer":"b","explanation":"b) Packet"},{"id":"2024A-Q34","session":"Autumn 2024","category":null,"questionNumber":34,"prompt":"A DHCP server has been installed in a LAN. When a PC that automatically acquires information from the DHCP server is to be connected to the LAN, which of the following will be set in the PC?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"IP address"},{"key":"b","text":"Latest virus definition file"},{"key":"c","text":"Address list of spam mail"},{"key":"d","text":"Mail addresses assigned by the Internet service provider"}],"correctAnswer":"a","explanation":"a) IP address"},{"id":"2024A-Q35","session":"Autumn 2024","category":null,"questionNumber":35,"prompt":"Which of the following is the appropriate example of biometric authentication?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Displaying an image of characters that are difficult for a machine to read on a monitor, and having a person read the characters and enter them."},{"key":"b","text":"Having a person enter a password via a software keyboard that is displayed on a touch panel."},{"key":"c","text":"Reading the trail, pressure, and other characteristics of the action when a touch pen is used for a signature."},{"key":"d","text":"Having a person answer a question that only the person knows the answer to."}],"correctAnswer":"c","explanation":"c) Reading the trail, pressure, and other characteristics of the action when a touch pen is used for a signature."},{"id":"2024A-Q36","session":"Autumn 2024","category":null,"questionNumber":36,"prompt":"When a document file attached to a received e-mail is opened on a PC, the PC begins to behave abnormally. Which of the following is an appropriate suspected attack?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"SQL injection"},{"key":"b","text":"Cross-site scripting"},{"key":"c","text":"Shoulder hacking"},{"key":"d","text":"Macro virus"}],"correctAnswer":"d","explanation":"d) Macro virus"},{"id":"2024A-Q37","session":"Autumn 2024","category":null,"questionNumber":37,"prompt":"Which of the following is the activity in A (Act) phase in the PDCA model adopted in an organization that operates an ISMS?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Deciding to make improvements concerning matters such as flaws that are revealed through the monitoring of operational status and the measurement and evaluation of operational results."},{"key":"b","text":"Monitoring operational status, and measuring and evaluating operational results."},{"key":"c","text":"Creating a security policy, establishing an organizational structure, and creating a procedure for achieving the targets that are defined in the security policy."},{"key":"d","text":"Communicating the security policy to employees, installing security equipment and other security measures, and operating them."}],"correctAnswer":"a","explanation":"a) Deciding to make improvements concerning matters such as flaws that are revealed through the monitoring of operational status and the measurement and evaluation of operational results."},{"id":"2024A-Q38","session":"Autumn 2024","category":null,"questionNumber":38,"prompt":"Which of the following is an example of an aim of an attacker who infects someone else’s PC with ransomware?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"To obtain personal information on the PC via a network."},{"key":"b","text":"To make files on the PC unusable, and to obtain money in exchange from unlocking them."},{"key":"c","text":"To obtain characters typed with the PC keyboard via a network."},{"key":"d","text":"To operate the PC without the user’s permission by sending instructions for operations via a network."}],"correctAnswer":"b","explanation":"b) To make files on the PC unusable, and to obtain money in exchange from unlocking them."},{"id":"2024A-Q39","session":"Autumn 2024","category":null,"questionNumber":39,"prompt":"A private key and a public key were generated as a key pair and a digital certificate for the public key was issued. Which of the following is an appropriate action that should be taken when the private key is leaked?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Reissuing the digital certificate with the same key pair."},{"key":"b","text":"Requesting to the certification authority for revocation of the digital certificate."},{"key":"c","text":"Creating a new key pair for reissuing a certificate due to the expiration of the validity period."},{"key":"d","text":"Continuing using the same digital certificate, because only the private key was leaked."}],"correctAnswer":"b","explanation":"b) Requesting to the certification authority for revocation of the digital certificate."},{"id":"2024A-Q40","session":"Autumn 2024","category":null,"questionNumber":40,"prompt":"Which of the following sets conditions for character type, length, etc. used for passwords that are set for accounts on a computer, etc.?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Single sign-on"},{"key":"b","text":"Password crack"},{"key":"c","text":"Password policy"},{"key":"d","text":"One-time password"}],"correctAnswer":"c","explanation":"c) Password policy"},{"id":"2024A-Q41","session":"Autumn 2024","category":null,"questionNumber":41,"prompt":"Among confidentiality, integrity, and availability, which of the following is the list that contains all and only the properties that are lost in the information security incident below?\n\n\"All files on a server in the workplace were encrypted. However, the server was infected by a virus, and a number of the files were deleted. Removal of the virus and recovery of the files required several hours. During the hours, work could not be performed, and users were inconvenienced. Some files were unable to be recovered.\"","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Confidentiality"},{"key":"b","text":"Confidentiality, integrity"},{"key":"c","text":"Integrity, availability"},{"key":"d","text":"Availability"}],"correctAnswer":"c","explanation":"c) Integrity, availability"},{"id":"2024A-Q42","session":"Autumn 2024","category":null,"questionNumber":42,"prompt":"A problem has been pointed out that the WEP encryption for wireless LANs can be broken easily. Which of the following is an encryption method that does not have the same weakness and is cryptographically stronger?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"ESSID"},{"key":"b","text":"S/MIME"},{"key":"c","text":"SSL"},{"key":"d","text":"WPA2"}],"correctAnswer":"d","explanation":"d) WPA2"},{"id":"2024A-Q43","session":"Autumn 2024","category":null,"questionNumber":43,"prompt":"Company A implements risk analysis for its own information assets. The results show that if a nearby river overflows, the server room on the first floor of the company might be flooded. The company considers the possibility of moving the server room, but decides there is almost no risk of a flood because the last time the river overflowed was 100 years ago, and the management decides that no particular countermeasures are taken. Which of the following is the risk treatment for information security that Company A selects?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Risk transfer"},{"key":"b","text":"Risk avoidance"},{"key":"c","text":"Risk acceptance"},{"key":"d","text":"Risk mitigation"}],"correctAnswer":"c","explanation":"c) Risk acceptance"},{"id":"2024A-Q44","session":"Autumn 2024","category":null,"questionNumber":44,"prompt":"The decision is made to digitize a paper-based contact list that only some people are permitted to view, and to manage it as a contact file. Among the measures A through D below, which of the following is the list that contains all and only the appropriate measures against personal information leakage?\n\nA: A password for reading is set for the contact file.\nB: The contact file is encrypted.\nC: The servers that stores the contact file are configured in a redundant configuration.\nD: After the contact list is digitized, the paper-based contact list is disposed of with a shredder.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A, B"},{"key":"b","text":"A, B, C"},{"key":"c","text":"A, B, D"},{"key":"d","text":"C, D"}],"correctAnswer":"c","explanation":"c) A, B, D"},{"id":"2024A-Q45","session":"Autumn 2024","category":null,"questionNumber":45,"prompt":"Among the Web browsing practices (1) through (3) below, which of the following is the list that contains all and only the practices that reduce security risks?\n\n(1) Storing the user ID and the password on the web browser\n(2) Disabling JavaScript\n(3) Logging on to the PC with administrator privileges when using the web browser","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"(1), (2)"},{"key":"b","text":"(1), (3)"},{"key":"c","text":"(2)"},{"key":"d","text":"(2), (3)"}],"correctAnswer":"c","explanation":"c) (2)"},{"id":"2024A-Q46","session":"Autumn 2024","category":null,"questionNumber":46,"prompt":"In software development, which of the following is the appropriate combination of the descriptions A through C concerning testing and testing processes?\n\nA: Check that processing ends within the planned operating time.\nB: Check the interface between software.\nC: Comprehensively check the internal paths of a program.","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Unit test: A, Integration test: B, System test: C"},{"key":"b","text":"Unit test: A, Integration test: C, System test: B"},{"key":"c","text":"Unit test: B, Integration test: A, System test: C"},{"key":"d","text":"Unit test: C, Integration test: B, System test: A"}],"correctAnswer":"d","explanation":"d) Unit test: C, Integration test: B, System test: A"},{"id":"2024A-Q47","session":"Autumn 2024","category":null,"questionNumber":47,"prompt":"Which of the following corresponds to software maintenance?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"A response time that was measured in a system test did not satisfy the requirement, so tuning was performed on the software."},{"key":"b","text":"As a result of a software acceptance test, a defect was found, so the orderer requested the developer to fix the software."},{"key":"c","text":"A function was found missing in a unit test of a program, so the function was added to the program."},{"key":"d","text":"A defect was reported on software that is running on a production system, so the software was modified."}],"correctAnswer":"d","explanation":"d) A defect was reported on software that is running on a production system, so the software was modified."},{"id":"2024A-Q48","session":"Autumn 2024","category":null,"questionNumber":48,"prompt":"Which of the following is an appropriate test for a user to confirm by himself/herself whether the delivered software satisfies the requirements?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Acceptance test"},{"key":"b","text":"Integration test"},{"key":"c","text":"System test"},{"key":"d","text":"Unit test"}],"correctAnswer":"a","explanation":"a) Acceptance test"},{"id":"2024A-Q49","session":"Autumn 2024","category":null,"questionNumber":49,"prompt":"A system migration plan was created for the migration from an existing system to a new system. Which of the following is an appropriate item to be described in the system migration plan?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"System selection policy"},{"key":"b","text":"Schedule for parallel operation of the existing and new systems"},{"key":"c","text":"Evaluation criteria for the quality of the deliverables"},{"key":"d","text":"The work history of project members"}],"correctAnswer":"b","explanation":"b) Schedule for parallel operation of the existing and new systems"},{"id":"2024A-Q50","session":"Autumn 2024","category":null,"questionNumber":50,"prompt":"Which of the following is the appropriate explanation of refactoring?","hasDiagram":false,"figureMissing":false,"figureHint":null,"options":[{"key":"a","text":"Improving internal architecture without changing the functions that software provides."},{"key":"b","text":"Discovering the specifications of software by analysis of its operations, etc."},{"key":"c","text":"Correcting a defect in software so that it performs according to the specifications."},{"key":"d","text":"Modifying software to add a new function on the basis of user requests, etc."}],"correctAnswer":"a","explanation":"a) Improving internal architecture without changing the functions that software provides."}]};
+
+(function () {
+  "use strict";
+  const QS = EXAM.questions;
+  const BY_ID = new Map(QS.map((q) => [q.id, q]));
+  const STORE_KEY = "philnits:" + EXAM.year + ":v1";
+  const $ = (s) => document.querySelector(s);
+
+  // ---------- persistence ----------
+  const defaults = () => ({ answers: {}, revealed: {}, hints: {}, bookmarks: {}, view: "quiz", order: null, filters: { q: "", session: "", status: "all" } });
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE_KEY));
+      if (s && typeof s === "object") return Object.assign(defaults(), s);
+    } catch (e) {}
+    return defaults();
+  }
+  let state = load();
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ---------- markdown + math rendering ----------
+  const ESC_CHARS = "\\`*_{}[]()#+-.!<>$|~\"'=&";
+  const htmlEsc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // Source uses "\$\\checkmark\$" for escaped math; normalise to "$\checkmark$".
+  const normalise = (s) => s.replace(/\\\$\\\\([a-zA-Z]+)\\\$/g, (_, c) => "$\\" + c + "$");
+
+  // "$...$" is math only when not glued to letters/digits (keeps spreadsheet refs like $A$36 or B$3 literal).
+  const RE_MATH = /(^|[^\\A-Za-z0-9$])\$([^$\n]+?)\$(?![A-Za-z0-9$])/g;
+
+  function extractMath(s, store) {
+    return s.replace(RE_MATH, (m, pre, tex) => {
+      if (/^\s|\s$/.test(tex)) return m;
+      store.push(tex);
+      return pre + "\uE000" + (store.length - 1) + "\uE000";
+    });
+  }
+
+  function renderTex(tex) {
+    if (window.katex) {
+      try { return katex.renderToString(tex, { throwOnError: false }); } catch (e) {}
+    }
+    return htmlEsc(texToPlain(tex));
+  }
+
+  function texToPlain(tex) {
+    const map = { times: "×", rightarrow: "→", leftarrow: "←", Rightarrow: "⇒", leftrightarrow: "↔", checkmark: "✓", div: "÷", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", cdot: "·", pm: "±", infty: "∞", approx: "≈", sqrt: "√" };
+    return tex
+      .replace(/\\([a-zA-Z]+)\s?/g, (m, c) => (c in map ? map[c] : m))
+      .replace(/\^\{([^}]*)\}/g, "^$1").replace(/_\{([^}]*)\}/g, "_$1")
+      .replace(/[{}]/g, "").replace(/\\ /g, " ");
+  }
+
+  function inline(src) {
+    const math = [], escs = [], code = [];
+    // `code` spans are shown verbatim (spreadsheet formulas etc.), so pull them out first.
+    let s = src.replace(/`([^`\n]+)`/g, (_, c) => (code.push(c), "" + (code.length - 1) + ""));
+    s = extractMath(normalise(s), math);
+    s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? (escs.push(c), "\uE001" + (escs.length - 1) + "\uE001") : m));
+    s = htmlEsc(s);
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^*])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
+    s = s.replace(/\uE001(\d+)\uE001/g, (_, i) => htmlEsc(escs[+i]));
+    s = s.replace(/\uE000(\d+)\uE000/g, (_, i) => renderTex(math[+i]));
+    return s.replace(/\uE002(\d+)\uE002/g, (_, i) => "<code>" + htmlEsc(code[+i]) + "</code>");
+  }
+
+  function plain(src) {
+    const math = [], code = [];
+    let s = src.replace(/`([^`\n]+)`/g, (_, c) => (code.push(c), "\uE002" + (code.length - 1) + "\uE002"));
+    s = extractMath(normalise(s), math);
+    s = s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/(^|[^*\\])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1$2");
+    s = s.replace(/\\(.)/g, (m, c) => (ESC_CHARS.includes(c) ? c : m));
+    s = s.replace(/\uE000(\d+)\uE000/g, (_, i) => texToPlain(math[+i]));
+    return s.replace(/\uE002(\d+)\uE002/g, (_, i) => code[+i]);
+  }
+
+  const RE_BULLET = /^\s*[*-]\s+/, RE_NUM = /^\s*\d+\.\s+/, RE_TABLE = /^\s*\|/, RE_FENCE = /^\s*```/;
+  function block(src) {
+    const lines = src.split("\n"), out = [];
+    let i = 0;
+    while (i < lines.length) {
+      const l = lines[i];
+      if (!l.trim()) { i++; continue; }
+      if (RE_FENCE.test(l)) {
+        const code = [];
+        i++;
+        while (i < lines.length && !RE_FENCE.test(lines[i])) code.push(lines[i++]);
+        i++;
+        out.push('<pre class="code"><code>' + htmlEsc(code.join("\n")) + "</code></pre>");
+      } else if (RE_TABLE.test(l)) {
+        const rows = [];
+        while (i < lines.length && RE_TABLE.test(lines[i])) rows.push(lines[i++]);
+        out.push(table(rows));
+      } else if (RE_BULLET.test(l) || RE_NUM.test(l)) {
+        const ordered = RE_NUM.test(l), re = ordered ? RE_NUM : RE_BULLET, items = [];
+        while (i < lines.length && re.test(lines[i])) items.push(lines[i++].replace(re, ""));
+        const tag = ordered ? "ol" : "ul";
+        out.push("<" + tag + ">" + items.map((t) => "<li>" + inline(t) + "</li>").join("") + "</" + tag + ">");
+      } else {
+        const para = [];
+        while (i < lines.length && lines[i].trim() && !RE_FENCE.test(lines[i]) && !RE_TABLE.test(lines[i]) && !RE_BULLET.test(lines[i]) && !RE_NUM.test(lines[i])) para.push(lines[i++]);
+        out.push("<p>" + para.map((t) => inline(t.trim())).join("<br>") + "</p>");
+      }
+    }
+    return out.join("");
+  }
+
+  function table(rows) {
+    const cells = (r) => r.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+    const body = rows.filter((r) => !/^\s*\|?\s*:?-{2,}/.test(r)).map(cells);
+    if (!body.length) return "";
+    const [head, ...rest] = body;
+    return "<table><thead><tr>" + head.map((c) => "<th>" + inline(c) + "</th>").join("") + "</tr></thead><tbody>" +
+      rest.map((r) => "<tr>" + r.map((c) => "<td>" + inline(c) + "</td>").join("") + "</tr>").join("") + "</tbody></table>";
+  }
+
+  const cache = new Map();
+  function rendered(q) {
+    let r = cache.get(q.id);
+    if (!r) {
+      r = {
+        prompt: block(q.prompt),
+        options: q.options.map((o) => inline(o.text)),
+        explanation: inline(q.explanation || ""),
+        hint: q.figureHint ? inline(q.figureHint) : "",
+        search: ("#" + q.questionNumber + " " + q.id + " " + plain(q.prompt) + " " + q.options.map((o) => plain(o.text)).join(" ") + " " + plain(q.figureHint || "")).toLowerCase(),
+      };
+      cache.set(q.id, r);
+    }
+    return r;
+  }
+
+  // ---------- filtering ----------
+  function ordered() {
+    if (!state.order) return QS;
+    const list = state.order.map((id) => BY_ID.get(id)).filter(Boolean);
+    return list.length === QS.length ? list : QS;
+  }
+
+  function visible() {
+    const f = state.filters, term = f.q.trim().toLowerCase();
+    const num = /^#?(\d+)$/.exec(term);
+    return ordered().filter((q) => {
+      if (f.session && q.session !== f.session) return false;
+      const a = state.answers[q.id];
+      if (f.status === "unanswered" && a) return false;
+      if (f.status === "incorrect" && (!a || a === q.correctAnswer)) return false;
+      if (f.status === "bookmarked" && !state.bookmarks[q.id]) return false;
+      if (!term) return true;
+      if (num) return q.questionNumber === +num[1];
+      return rendered(q).search.includes(term);
+    });
+  }
+
+  // ---------- views ----------
+  function quizCard(q) {
+    const r = rendered(q), a = state.answers[q.id], revealed = !a && state.revealed[q.id];
+    const done = !!a || revealed;
+    const status = a ? (a === q.correctAnswer ? '<span class="tag ok">Correct</span>' : '<span class="tag bad">Incorrect</span>') : "";
+    const opts = q.options.map((o, i) => {
+      let cls = "", mark = "";
+      if (done && o.key === q.correctAnswer) { cls = "correct"; mark = "✅"; }
+      else if (a && o.key === a) { cls = "wrong"; mark = "❌"; }
+      else if (done) cls = "dim";
+      return '<button type="button" class="opt ' + cls + '" data-act="pick" data-key="' + o.key + '"' + (done ? " disabled" : "") + ">" +
+        '<span class="k">' + o.key + '</span><span class="t">' + r.options[i] + '</span><span class="m">' + mark + "</span></button>";
+    }).join("");
+    const hintOpen = done || !!state.hints[q.id];
+    const foot = (done
+      ? '<button type="button" class="linkbtn" data-act="clear">' + (a ? "Try again" : "Hide answer") + "</button>"
+      : '<button type="button" class="linkbtn" data-act="reveal">Reveal answer</button>') +
+      (q.figureHint && !hintOpen ? '<button type="button" class="linkbtn" data-act="hint">Show figure hint</button>' : "");
+    return '<article class="q" data-id="' + q.id + '">' + head(q, status) +
+      '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
+      '<div class="opts">' + opts + "</div>" + (hintOpen ? figHint(q) : "") +
+      '<div class="q-foot">' + foot + "</div>" +
+      (done && r.explanation ? '<div class="explain"><strong>Answer:</strong> ' + r.explanation + "</div>" : "") +
+      "</article>";
+  }
+
+  function docCard(q) {
+    const r = rendered(q);
+    const opts = q.options.map((o, i) => {
+      const ok = o.key === q.correctAnswer;
+      return '<li class="' + (ok ? "correct" : "") + '">[' + (ok ? "x" : "&nbsp;") + "] " + o.key + ") " + r.options[i] + (ok ? " ✅" : "") + "</li>";
+    }).join("");
+    return '<article class="q" data-id="' + q.id + '">' + head(q, "") +
+      '<div class="prompt">' + r.prompt + "</div>" + figNote(q) +
+      '<ul class="doc-opts">' + opts + "</ul>" + figHint(q) +
+      '<div class="doc-ans"><strong>Answer:</strong> ' + r.explanation + "</div></article>";
+  }
+
+  function head(q, status) {
+    const bm = !!state.bookmarks[q.id];
+    return '<div class="q-head"><span class="q-num">Question ' + q.questionNumber + '</span><span class="tag">' + htmlEsc(q.session || "") + "</span>" + status +
+      '<button type="button" class="bm" data-act="bookmark" aria-pressed="' + bm + '" aria-label="Bookmark question ' + q.questionNumber + '" title="Bookmark">' + (bm ? "★" : "☆") + "</button></div>";
+  }
+
+  // Figures the source could not include: a short note under the prompt, and a written hint
+  // (what the figure shows and which choice is right) below the choices.
+  const figNote = (q) => (q.figureMissing
+    ? '<div class="note-fig">📷 The figure for this question is not included in the source' + (q.figureHint ? "; a written hint is available below the choices." : ".") + "</div>"
+    : "");
+  const figHint = (q) => (q.figureHint ? '<div class="hint"><strong>💡 Figure hint:</strong> ' + rendered(q).hint + "</div>" : "");
+
+  function render() {
+    const list = visible(), box = $("#list"), doc = state.view === "doc";
+    box.className = doc ? "doc" : "quiz";
+    box.innerHTML = list.length ? list.map(doc ? docCard : quizCard).join("") : '<p class="empty">No questions match these filters.</p>';
+    $("#count-line").textContent = "Showing " + list.length + " of " + QS.length + " questions" + (state.order ? " · shuffled" : "");
+    $("#btn-copy").hidden = !doc || !list.length;
+    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === state.view)));
+    $("#btn-shuffle").setAttribute("aria-pressed", String(!!state.order));
+    stats();
+  }
+
+  function rerenderCard(id) {
+    const el = document.querySelector('.q[data-id="' + id + '"]');
+    if (!el) return;
+    const q = BY_ID.get(id);
+    el.outerHTML = state.view === "doc" ? docCard(q) : quizCard(q);
+  }
+
+  function stats() {
+    let answered = 0, correct = 0;
+    for (const q of QS) {
+      const a = state.answers[q.id];
+      if (a) { answered++; if (a === q.correctAnswer) correct++; }
+    }
+    $("#st-answered").textContent = answered + "/" + QS.length;
+    $("#st-score").textContent = answered ? Math.round((correct / answered) * 100) + "%" : "–";
+    $("#st-remaining").textContent = QS.length - answered;
+    $("#progress-bar").style.width = (answered / QS.length) * 100 + "%";
+    // Summary for the home page's year cards.
+    try { localStorage.setItem("philnits:" + EXAM.year + ":summary", JSON.stringify({ answered, correct, total: QS.length })); } catch (e) {}
+  }
+
+  // ---------- copy (document view) ----------
+  function copyText(list) {
+    return list.map((q) => {
+      const opts = q.options.map((o) => (o.key === q.correctAnswer ? "[x] " : "[ ] ") + o.key + ") " + plain(o.text) + (o.key === q.correctAnswer ? " ✅" : "")).join("\n");
+      const hint = q.figureHint ? "\n\nFigure hint: " + plain(q.figureHint) : "";
+      return "Question " + q.questionNumber + " (" + q.session + ")\n" + plain(q.prompt) + "\n\n" + opts + hint + "\n\nAnswer: " + plain(q.explanation || "");
+    }).join("\n\n");
+  }
+
+  async function copyVisible() {
+    const text = copyText(visible());
+    try {
+      await navigator.clipboard.writeText(text);
+      toast("Copied " + visible().length + " questions");
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("Copied"); } catch (e2) { toast("Copy failed"); }
+      ta.remove();
+    }
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // ---------- theme ----------
+  function currentTheme() {
+    return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+  function themeLabel() { $("#btn-theme").textContent = currentTheme() === "dark" ? "☀ Light" : "☾ Dark"; }
+
+  // ---------- events ----------
+  $("#list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const id = btn.closest(".q").dataset.id;
+    const act = btn.dataset.act;
+    if (act === "pick") { state.answers[id] = btn.dataset.key; delete state.revealed[id]; }
+    else if (act === "reveal") state.revealed[id] = true;
+    else if (act === "hint") state.hints[id] = true;
+    else if (act === "clear") { delete state.answers[id]; delete state.revealed[id]; delete state.hints[id]; }
+    else if (act === "bookmark") { if (state.bookmarks[id]) delete state.bookmarks[id]; else state.bookmarks[id] = true; }
+    save(); rerenderCard(id); stats();
+  });
+
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
+    state.view = b.dataset.view; save(); render();
+  }));
+
+  let searchTimer;
+  $("#f-search").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.filters.q = e.target.value; save(); render(); }, 120);
+  });
+  $("#f-session").addEventListener("change", (e) => { state.filters.session = e.target.value; save(); render(); });
+  $("#f-status").addEventListener("change", (e) => { state.filters.status = e.target.value; save(); render(); });
+
+  $("#btn-shuffle").addEventListener("click", () => {
+    if (state.order) state.order = null;
+    else {
+      const ids = QS.map((q) => q.id);
+      for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+      state.order = ids;
+    }
+    save(); render(); window.scrollTo({ top: 0 });
+  });
+
+  $("#btn-reset").addEventListener("click", () => {
+    if (!confirm("Clear all your answers and revealed answers for this exam? Bookmarks are kept.")) return;
+    state.answers = {}; state.revealed = {}; state.hints = {}; state.order = null;
+    save(); render(); toast("Progress cleared");
+  });
+
+  $("#btn-theme").addEventListener("click", () => {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("philnits:theme", next); } catch (e) {}
+    themeLabel();
+  });
+
+  $("#btn-copy").addEventListener("click", copyVisible);
+
+  // ---------- init ----------
+  function init() {
+    const sessions = [...new Set(QS.map((q) => q.session).filter(Boolean))];
+    $("#f-session").insertAdjacentHTML("beforeend", sessions.map((s) => '<option value="' + htmlEsc(s) + '">' + htmlEsc(s) + "</option>").join(""));
+    if (!sessions.includes(state.filters.session)) state.filters.session = "";
+    $("#f-search").value = state.filters.q;
+    $("#f-session").value = state.filters.session;
+    $("#f-status").value = state.filters.status;
+    $("#foot").textContent = QS.length + " questions · source: examQA-md · built " + EXAM.generatedAt.slice(0, 10);
+    themeLabel();
+    render();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>

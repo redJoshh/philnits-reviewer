@@ -6,7 +6,8 @@
 - b) The output of “Agree” is generated at all times when two or more inputs are “Agree.”
 - c) The output of “Disagree” is generated only when two or more inputs are “Disagree.”
 - d) The output of “Agree” is generated only when all three inputs are “Agree.”  
-  **✅ Correct Answer: d**
+  **✅ Correct Answer: d**  
+  **💡 Figure hint:** Figure 2 chains the two boxes: inputs 1 and 2 go into the first box, and its output together with input 3 goes into the second box. Each box outputs "Agree" only when both of its inputs are "Agree" (it works like AND), so the final output is "Agree" only when all three inputs are "Agree" (d).
 
 ---
 
@@ -27,7 +28,8 @@
 - c) [Figure C]
 - d) [Figure D]  
   _(Note: Figures omitted in source text)_  
-  **✅ Correct Answer: b**
+  **✅ Correct Answer: b**  
+  **💡 Figure hint:** Decode the target code the same way as the example (00 = lowest of the four levels, 11 = highest): 01 00 10 11 01 → levels 1, 0, 2, 3, 1. Figure B is the waveform that sits near level 1 at Time 1, dips to the lowest level at Time 2, rises to level 2 at Time 3, peaks at the top level at Time 4, and falls back to level 1 at Time 5.
 
 ---
 
@@ -268,7 +270,8 @@ Body text: `<strong>The role of the system administrator is <color1>to promote t
 - c) `D1\D2\D4\A`
 - d) `D2\D4\A`  
   _(Note: Directory structure diagram omitted in source text)_  
-  **✅ Correct Answer: b**
+  **✅ Correct Answer: b**  
+  **💡 Figure hint:** In the directory diagram, D3 (the current directory, marked *) and D2 sit in the same parent directory, D4 is inside D2, and file A is inside D4. From D3, go up one level with `..`, then down into D2 and D4: `..\D2\D4\A` (b).
 
 ---
 
@@ -320,7 +323,8 @@ _(Note: Source tables omitted for brevity, see original exam for visual layout)_
 - b) [Table B]
 - c) [Table C]
 - d) [Table D]  
-  **✅ Correct Answer: d**
+  **✅ Correct Answer: d**  
+  **💡 Figure hint:** Table A has the columns Customer code, Customer name, Employee name, Region name and Representative name. The candidates for "Customers" are: [Table A] Customer code, Customer name, Representative name; [Table B] the same plus Employee code; [Table C] the same plus Region code; [Table D] the same plus Employee code and Region code. Employee name and Region name can only be brought in through the foreign keys Employee code (to "Employees in charge") and Region code (to "Regions"), so "Customers" needs both: Table D (d). The candidate columns come from 2025 Spring Q26, the same question.
 
 ---
 

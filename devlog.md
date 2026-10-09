@@ -93,3 +93,76 @@
 - Q5, Q28 and Q94 are skipped: their answer choices are figures and the source has no option lines ("Diagrams omitted in source text"). They can be added once the figures/options are filled in.
 - No duplicate questions within 2026. Five questions are reused from 2019 (2026S-Q43 = 2019A-Q42, 2026S-Q19 = 2019S-Q22, 2026S-Q41 = 2019S-Q43, 2026S-Q15 = 2019A-Q15, 2026S-Q06 = 2019S-Q05); kept, as with the 2011/2019 overlaps.
 - No code changes were needed: the 2026 file uses the same layout as the 2019 files.
+
+## 2026-10-09 — 2024 exam page (Spring + Autumn)
+
+### Created
+- **`2024/index.html`** — generated from `examQA-md/IT Passport Exam - 2024 Spring.md` (April 2024) and `IT Passport Exam - 2024 Autumn.md` (October 2024). 100 questions (Spring Q1–50, Autumn Q1–50), none skipped.
+- **`index.html`** (root) — regenerated; now lists 2026, 2024, 2019 and 2011.
+
+### Source data notes (2024)
+- Spring Q1: the answer choices are figures ("[Figure A]"–"[Figure D]", omitted in source). It is kept because it has four option lines and an answer, but it can't be answered from the text alone until the figures are added.
+- Spring Q17: the directory-structure diagram is omitted in the source; the question shows the "figure not included" note.
+- No duplicate questions within 2024. Several are reused across years and were kept, as with earlier overlaps:
+  - from 2019: 2024A-Q02 = 2019S-Q02, 2024A-Q04 = 2019S-Q03, 2024A-Q07 = 2019S-Q07, 2024S-Q21 = 2019S-Q22, 2024A-Q24 = 2019S-Q24, 2024A-Q31 = 2019S-Q31, 2024S-Q43 = 2019S-Q43, 2024S-Q40 = 2019S-Q44, 2024A-Q48 = 2019S-Q48, 2024S-Q11 = 2019A-Q13, 2024A-Q47 = 2019A-Q46
+  - in 2026: 2026S-Q02 = 2024S-Q02, 2026S-Q19 = 2024S-Q21, 2026S-Q21 = 2024S-Q22, 2026S-Q29 = 2024S-Q29, 2026S-Q31 = 2024S-Q31, 2026S-Q41 = 2024S-Q43, 2026S-Q14 = 2024A-Q15, 2026S-Q27 = 2024A-Q28, 2026S-Q48 = 2024A-Q49
+- No code changes were needed: the 2024 files use the same layout as the 2019 files. The other year pages were left as they were; rebuilding them only changes their build timestamp.
+
+## 2026-10-09 — Figure hints for questions whose figure is missing
+
+New rule in CLAUDE.md: when a question depends on a picture, figure, graph or table that the source does not include, show a note/hint below the choices that says what the answer is.
+
+### Changed
+- **Source markdown** — a `**💡 Figure hint:** …` line was added after the answer line of each question whose figure is missing. It says what the missing figure shows and why the answer is right. 30 questions in total:
+  - 2011: Spring Q1, Q40, Q46, Q48; Autumn Q8, Q45
+  - 2019: Spring Q1, Q3, Q5, Q14, Q20; Autumn Q1, Q3, Q22, Q27
+  - 2024: Spring Q1, Q7, Q17, Q20, Q25; Autumn Q4, Q19, Q20, Q26
+  - 2025: Autumn Q18
+  - 2026: Q1, Q5, Q7, Q28, Q94
+- **`tools/build-data.js`**
+  - Reads the `💡 Figure hint` line into a new `figureHint` field. A new `figureMissing` flag is set when a question has a hint, has a `_(Note: … omitted …)_` line, or has placeholder choices such as "[Figure A]". The build warns about any question whose figure is missing but which has no hint.
+  - The "(Note: … omitted in source text)" lines are no longer shown inside the question text; the page shows its own note instead.
+  - Questions whose choices are figures and which have no option lines at all get placeholder choices "[Figure A]"–"[Figure D]" when they have a hint. As a result, **2026 Q5, Q28 and Q94 are no longer skipped**, and 2026 now has all 100 questions.
+  - A year whose markdown has no complete questions yet is skipped (no empty page, no home-page card).
+- **`tools/template.html`**
+  - The "figure not included" note now appears only on questions that are actually missing their figure. It used to appear on any question that mentioned a word like "chart" or "diagram" (e.g. "Which of the following is a Gantt chart…").
+  - Document view: the hint is shown below the choices, before the answer callout.
+  - Quiz view: a "Show figure hint" button sits next to "Reveal answer". After the question is answered or revealed, the hint is shown automatically. "Try again" and Reset hide it again. Which hints are open is saved in `localStorage` with the rest of the progress.
+  - "Copy as text" includes the hint, and search also matches hint text.
+- **All year pages** regenerated.
+
+### Notes on the hints
+- Most hints are worked out from the question text and the answer key, e.g. decoding the sound-signal codes, the state ring in 2024 Spring Q7, and the directory paths.
+- A few figures can't be reconstructed from the text: the table choices in 2019 Autumn Q27, the stack in 2026 Q5, and the sales tables in 2024 Autumn Q26. For these, the hint explains the reasoning and names the correct choice. It does not describe the exact figure.
+- 2026 Q1's decision table is taken from 2011 Autumn Q6 (the same question). 2024 Autumn Q20's sheet is taken from 2019 Autumn Q17.
+
+## 2026-10-09 — 2025 Autumn exam page
+
+### Created
+- **`2025/index.html`** — generated from `examQA-md/IT Passport Exam - 2025 Autumn.md` (October 2025). 50 questions (Autumn Q1–50), none skipped. The Spring 2025 file will be added later and will join the same page.
+- **`index.html`** (root) — regenerated; now lists 2026, 2025, 2024, 2019 and 2011.
+
+### Changed
+- **`examQA-md/IT Passport Exam - 2025 Autumn.md`** — removed text left over from the extraction: the chat preamble ("Here are the first 50 questions…"), the outer ```` ```` ```` markdown fence, a stray ```` ```` ```` after Q6, and the closing fences at the end. The file was first saved as "… 2025 Spring.md" and renamed to "… 2025 Autumn.md" to match its October 2025 title. Added a figure hint to Q18. The question content is unchanged.
+- **`tools/build-data.js`**
+  - Accepts the answer line `**Correct Answer:** c` used by the 2025 file, as well as the existing `**✅ Correct Answer: c**`.
+  - Code blocks in fences (```` ```text ````) are kept exactly as written, so program lines are not mistaken for options.
+- **`tools/template.html`** — fenced code (the pseudo-code programs in 2025 Q6 and Q8) is shown as a monospace code block.
+
+### Source data notes (2025)
+- The questions are from the October 2025 (Autumn) exam, so IDs are `2025A-Q01`…`2025A-Q50`.
+- No duplicate questions within 2025. Three are reused from 2019 and kept: 2025A-Q05 = 2019S-Q09, 2025A-Q11 = 2019A-Q12, 2025A-Q19 = 2019A-Q19.
+
+## 2026-10-09 — 2025 Spring added to the 2025 page
+
+### Changed
+- **`2025/index.html`** — regenerated with `examQA-md/IT Passport Exam - 2025 Spring.md` (April 2025): 100 questions, Spring Q1–50 first, then Autumn Q1–50. None skipped. The Session filter now offers Spring 2025 and Autumn 2025.
+- **`index.html`** (root) — the 2025 card now shows "Spring · 50" and "Autumn · 50".
+- **`examQA-md/IT Passport Exam - 2025 Spring.md`**
+  - Removed text left over from the extraction, the same as in the Autumn file: the chat preamble, the outer ```` ```` ```` markdown fence, a stray ```` ```` ```` after Q6, and the closing fences at the end. The question content is unchanged.
+  - Added figure hints to Q1 (how Figure 2 chains the boxes) and Q30 (which network layout is correct; the four layouts are omitted in the source).
+- **`tools/build-data.js`** — a choice written as `_(Figure omitted…)_` (2025 Spring Q30) becomes a "[Figure A]"–"[Figure D]" placeholder, and the question is flagged as missing its figure.
+- **`examQA-md/IT Passport Exam - 2019 Autumn.md`** — the Q27 hint now lists the actual candidate "Customers" tables and explains why Table D is right. The tables come from 2025 Spring Q26, which is the same question with the tables written out.
+
+### Source data notes (2025 Spring)
+- No duplicates within 2025 (Spring vs Autumn). Three Spring questions are reused from 2019 and kept: 2025S-Q11 = 2019A-Q10, 2025S-Q26 = 2019A-Q27, 2025S-Q40 = 2019A-Q43.

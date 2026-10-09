@@ -21,11 +21,20 @@ const RE_SOURCE = /^\*\(Source:\s*(.+?)\s*[—-]\s*(Spring|Autumn|Fall)\s+(\d{4}
 const RE_OPTION = /^\*\s+\\?\[( |x|X)\\?\]\s+([a-d])\)\s?(.*)$/;
 const RE_OPTION_B = /^[-*]\s+([a-d])\)\s?(.*)$/;
 const RE_ANSWER = /^\*\*Answer:\*\*\s*(.*)$/;
-const RE_ANSWER_B = /^\s*\*\*✅\s*Correct Answer:\s*([a-d])\b.*\*\*$/i;
+// "**✅ Correct Answer: a**" or (2025 files) "**Correct Answer:** a"
+const RE_ANSWER_B = /^\s*\*\*(?:✅\s*)?Correct Answer:\s*(?:\*\*\s*)?([a-d])\b.*$/i;
+const RE_FENCE = /^\s*```/;
 const RE_EMPTY_BULLET = /^\*\s*$/;
 const RE_RULE = /^-{3,}\s*$/;
-const RE_VISUAL = /\b(figure|diagram|graph|chart|flowchart|illustration)s?\b/i;
+const RE_VISUAL = /\b(figure|fig\.|diagram|graph|chart|flowchart|illustration)s?\b/i;
 const RE_TABLE_REF = /\btable (below|shown)|\b(below|following) table\b/i;
+// Figures the source could not include. A "**💡 Figure hint:** …" line (after the answer line)
+// describes the missing figure and what the answer is, so the question can still be studied.
+const RE_HINT = /^\s*\*\*💡\s*Figure hint:\*\*\s*(.*)$/i;
+const RE_OMITTED_NOTE = /^\s*_\(Note:[^)]*\bomitted\b[^)]*\)_\s*$/i;
+const RE_OMITTED_CLAUSE = /\.?\s*(?:Diagrams|Figures|Tables)? omitted in source text/i;
+const RE_OMITTED_OPT = /^_\((figure|diagram|table|graph)s? omitted\b[^)]*\)_$/i;
+const RE_PLACEHOLDER_OPT =/^\[?(figure|diagram|table|graph)\s+[a-d]\]?$/i;
 const SESSION_ORDER = { Spring: 0, Autumn: 1 };
 const MONTH_TERM = { april: "Spring", october: "Autumn" };
 
@@ -87,6 +96,10 @@ function parseFile(file) {
         warnings.push(`${tag}: marked option (${marked[0]}) disagrees with Answer line (${answerKey})`);
     }
     const correct = marked[0] || answerKey || null;
+    // Questions whose choices are themselves figures may have no option lines at all;
+    // give them placeholder choices so they can be answered with the help of the hint.
+    if (!q.options.length && q.figureOmitted && q.hint)
+      q.options = ["a", "b", "c", "d"].map((key) => ({ key, text: `[Figure ${key.toUpperCase()}]`, checked: false }));
     const correctOpt = q.options.find((o) => o.key === correct);
 
     // Incomplete questions (e.g. a truncated file) are left out rather than shown half-built.
@@ -100,13 +113,17 @@ function parseFile(file) {
     // Layout B has no explanation; like a missing **Answer:** line, show the correct option.
     const explanation = q.answer || `${correctOpt.key}) ${correctOpt.text}`;
     const hasTable = /^\|/m.test(full);
+    const figureMissing = !!q.hint || q.figureOmitted || q.options.some((o) => RE_PLACEHOLDER_OPT.test(o.text));
+    if (figureMissing && !q.hint) warnings.push(`${tag}: figure missing from source and no "💡 Figure hint" line`);
     questions.push({
       id: q.id,
       session: q.session,
       category: null, // categories not tagged in source yet
       questionNumber: q.number,
       prompt: full,
-      hasDiagram: RE_VISUAL.test(full) || (RE_TABLE_REF.test(full) && !hasTable),
+      hasDiagram: figureMissing || RE_VISUAL.test(full) || (RE_TABLE_REF.test(full) && !hasTable),
+      figureMissing,
+      figureHint: q.hint || null,
       options: q.options.map(({ key, text }) => ({ key, text })),
       correctAnswer: correct,
       explanation,
@@ -115,11 +132,11 @@ function parseFile(file) {
   };
 
   for (const raw of lines) {
-    const line = raw.replace(/\s+$/, "");
+    let line = raw.replace(/\s+$/, "");
     let m;
     const newQuestion = (number, layoutB) => {
       finish();
-      q = { number, layoutB, id: null, session: null, promptLines: [], trailingLines: [], options: [], answer: "", answerKey: null, done: false };
+      q = { number, layoutB, id: null, session: null, promptLines: [], trailingLines: [], options: [], answer: "", answerKey: null, hint: "", figureOmitted: false, done: false };
       if (fromFile) {
         q.session = `${fromFile.term} ${fromFile.year}`;
         q.id = makeId(fromFile.year, fromFile.term, number);
@@ -135,6 +152,12 @@ function parseFile(file) {
       continue;
     }
     if (!q) continue;
+    // Fenced code (programs, pseudo-code) is kept verbatim as part of the prompt.
+    if (RE_FENCE.test(line) || q.inFence) {
+      if (RE_FENCE.test(line)) q.inFence = !q.inFence;
+      (q.options.length ? q.trailingLines : q.promptLines).push(line);
+      continue;
+    }
     if ((m = line.match(RE_SOURCE))) {
       const term = /^fall$/i.test(m[2]) ? "Autumn" : m[2][0].toUpperCase() + m[2].slice(1).toLowerCase();
       q.session = `${term} ${m[3]}`;
@@ -147,7 +170,13 @@ function parseFile(file) {
       continue;
     }
     if (q.layoutB && (m = line.match(RE_OPTION_B))) {
-      q.options.push({ key: m[1], text: m[2].trim(), checked: false });
+      let text = m[2].trim();
+      // A choice that is itself a missing figure: "_(Figure omitted: …)_" → "[Figure A]".
+      if (RE_OMITTED_OPT.test(text)) {
+        text = `[Figure ${m[1].toUpperCase()}]`;
+        q.figureOmitted = true;
+      }
+      q.options.push({ key: m[1], text, checked: false });
       continue;
     }
     if (q.layoutB && (m = line.match(RE_TABLE_OPTION))) {
@@ -163,6 +192,19 @@ function parseFile(file) {
       q.answerKey = m[1].toLowerCase();
       q.done = true;
       continue;
+    }
+    if ((m = line.match(RE_HINT))) {
+      q.hint = m[1].trim();
+      continue;
+    }
+    // "_(Note: Figures omitted in source text)_" is replaced by the figure note on the page.
+    if (RE_OMITTED_NOTE.test(line)) {
+      q.figureOmitted = true;
+      continue;
+    }
+    if (RE_OMITTED_CLAUSE.test(line)) {
+      q.figureOmitted = true;
+      line = line.replace(RE_OMITTED_CLAUSE, ".").replace(/\.\.\)/, ".)");
     }
     if (RE_EMPTY_BULLET.test(line) || RE_RULE.test(line)) continue;
     if (q.done) {
@@ -201,6 +243,13 @@ function main() {
     const title = f.replace(/\.md$/i, "").replace(/\s+(Spring|Autumn|Fall)\s*$/i, "").trim();
     if (!byYear.has(year)) byYear.set(year, { title, questions: [] });
     byYear.get(year).questions.push(...questions);
+  }
+
+  // A year whose markdown is still being written (no question parses yet) gets no page or home card.
+  for (const [year, exam] of byYear) {
+    if (exam.questions.length) continue;
+    console.warn(`skip ${year}: no complete questions yet`);
+    byYear.delete(year);
   }
 
   for (const [year, exam] of byYear) {

@@ -6,7 +6,8 @@
 - b) (not A) and (B or C)
 - c) (not A) or (B and C)
 - d) (not A) or (B or C)  
-  **✅ Correct Answer: a**
+  **✅ Correct Answer: a**  
+  **💡 Figure hint:** The black area is where circles B and C overlap, excluding the part that is also inside A, that is, inside B, inside C and outside A: (not A) and B and C (a).
 
 ---
 
@@ -26,7 +27,8 @@
 - b) 9
 - c) 12
 - d) 20  
-  **✅ Correct Answer: b**
+  **✅ Correct Answer: b**  
+  **💡 Figure hint:** Fig. 1 is a grid of nodes with rows A–D and columns 1–4, and a shortest path only moves toward the destination. From A1 to C2 (two rows down, one column across) there are 3 shortest paths, as Fig. 2 counts. From C2 to D4 (one row down, two columns across) there are also 3. Paths via C2 = 3 × 3 = 9 (b).
 
 ---
 
@@ -53,7 +55,8 @@ A white square indicates 0, and a black square indicates a different positive va
 - c) [Diagram C]
 - d) [Diagram D]  
   _(Note: Diagrams omitted in source text)_  
-  **✅ Correct Answer: b**
+  **✅ Correct Answer: b**  
+  **💡 Figure hint:** Diagram B is the valid swap: one variable is first copied into TMP before it is overwritten, then restored from TMP: TMP ← A, A ← B, B ← TMP. The other diagrams overwrite a variable before saving it, so one of the two values is lost.
 
 ---
 
@@ -152,7 +155,8 @@ A white square indicates 0, and a black square indicates a different positive va
 - c) [Diagram C]
 - d) [Diagram D]  
   _(Note: Diagrams omitted in source text)_  
-  **✅ Correct Answer: d**
+  **✅ Correct Answer: d**  
+  **💡 Figure hint:** Devices in parallel keep the system running as long as any one of them works, while every device in series is another point of failure. Diagram D is the configuration with the most redundancy (devices duplicated in parallel, fewest single points of failure), so it has the lowest probability of the whole system stopping (d).
 
 ---
 
@@ -219,7 +223,8 @@ A white square indicates 0, and a black square indicates a different positive va
 - b) `$B$1*((1+$B2)^A$4 −1)`
 - c) `$B$1*((1+B$2)^$A4 −1)`
 - d) `$B$1*((1+B$2)^A$4 −1)`  
-  **✅ Correct Answer: c**
+  **✅ Correct Answer: c**  
+  **💡 Figure hint:** The worksheet is not in the source. B1 holds the principal (1,000), the interest rates run across row 2 (B2 to F2), and the number of years runs down column A (A4 to A13). When B4 is copied across and down, the rate must stay in row 2 (`B$2`) and the years must stay in column A (`$A4`): `$B$1*((1+B$2)^$A4 −1)` (c).
 
 ---
 
